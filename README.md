@@ -1,4 +1,4 @@
-🚀 Fluxograma Enterprise (Motor V10)
+🚀 Fluxograma Enterprise (CEREBUS V1.0)
 Uma plataforma web avançada e standalone para criação, animação e apresentação de fluxogramas, mapas de processos e diagramas arquitetônicos. Construído para unir a facilidade de um quadro branco interativo com o poder de uma ferramenta de apresentação animada.
 
 🌟 O Grande Diferencial
