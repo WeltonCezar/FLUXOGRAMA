@@ -216,8 +216,22 @@
         .btn-export { flex: 1; padding: 10px; background: #6610f2; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
         .btn-play { width: 100%; padding: 12px; background: linear-gradient(135deg, #ffc107, #ff9800); color: #333; border: none; font-weight: bold; cursor: pointer; margin-bottom: 10px; box-shadow: 0 4px 10px rgba(255, 193, 7, 0.3); font-size: 14px; display:flex; align-items:center; justify-content:center; gap:8px;}
         
-        #context-menu { display: none; position: absolute; width: 340px; background: white; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 1000; border: 1px solid #eee; }
-        .menu-tabs { display: flex; background: #f8f9fa; border-bottom: 1px solid #eee; }
+        #context-menu { display: none; position: absolute; width: 400px; background: white; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 1000; border: 1px solid #eee; }
+        /* [Nova Alça] Estilo da barra de transporte superior */
+        .menu-drag-handle {
+            height: 24px;
+            background: #e9ecef; /* Cor de cabeçalho cinza suave */
+            border-bottom: 1px solid #ddd;
+            cursor: grab; /* O cursor de mãozinha agora fica exclusivo aqui */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-top-left-radius: 12px; /* Arredonda o topo para combinar com o painel */
+            border-top-right-radius: 12px;
+            margin-top: -5px; /* Ajuste fino para encostar no topo */
+        }
+        .menu-drag-handle:active { cursor: grabbing; } /* Fecha a mão ao segurar */
+        .menu-tabs { display: flex; background: #f8f9fa; border-bottom: 1px solid #eee; /* Cursor grab REMOVIDO daqui */ }
         .tab-btn { flex: 1; padding: 10px; border: none; background: none; cursor: pointer; }
         .tab-btn.active { color: var(--primary-color); border-bottom: 2px solid var(--primary-color); background: white; }
         .menu-content { padding: 15px; } .menu-section { display: none; } .menu-section.active { display: block; }
@@ -580,6 +594,13 @@
     </div>
 
     <div id="context-menu">
+<button class="close-menu-btn" onclick="closeMenu()">×</button>
+<div class="menu-drag-handle">
+    <svg width="30" height="6" viewBox="0 0 30 6" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.5;">
+        <rect x="0.5" y="0.5" width="29" height="1" rx="0.5" fill="#555" stroke="none"/>
+        <rect x="0.5" y="4.5" width="29" height="1" rx="0.5" fill="#555" stroke="none"/>
+    </svg>
+</div>
 <div class="menu-tabs">
     <button class="tab-btn active" onclick="switchTab(event, 'tab-shape')">Formas</button>
     <button class="tab-btn" onclick="switchTab(event, 'tab-animated')">✨ Vivos</button>
@@ -781,7 +802,54 @@
         </div>
     </div>
 
-    <div id="wizard-overlay"> <div class="wizard-card"> <div class="wiz-close" onclick="closeWizard()">×</div> <div class="wizard-left"> <div class="mascot-box"> <svg viewBox="0 0 100 100" class="mascot-svg" width="100%" height="100%"> <rect x="20" y="30" width="60" height="50" rx="15" fill="#ffffff" /> <circle cx="50" cy="20" r="15" fill="#ffffff" /> <circle cx="50" cy="5" r="4" fill="#00ffff" /> <rect x="48" y="5" width="4" height="15" fill="#ffffff" /> <rect x="30" y="45" width="12" height="6" rx="3" fill="#6610f2" class="eye" /> <rect x="58" y="45" width="12" height="6" rx="3" fill="#6610f2" class="eye" /> <path d="M 40 65 Q 50 75 60 65" stroke="#6610f2" stroke-width="4" fill="none" stroke-linecap="round" /> <rect x="5" y="40" width="15" height="8" rx="4" fill="#ffffff" class="arm-left" /> <g class="arm-right"> <rect x="80" y="40" width="15" height="8" rx="4" fill="#ffffff" /> </g> </svg> </div> <h3 style="margin:0;">Guia Inteligente</h3> <p style="font-size:13px; opacity:0.8;">Vou ajudar-te a dominar a plataforma!</p> </div> <div class="wizard-right"> <div class="step-content active" id="step-1"> <h2 class="wiz-title">Bem-vindo(a) ao Motor V10!</h2> <div class="wiz-text"> <p>O teu sistema foi atualizado para uma arquitetura incrivelmente robusta. Aqui está o básico:</p> <p><b>Dica de Ouro:</b> Repara que ao deixares o rato parado por 3 segundos sobre os botões laterais, aparecerá uma etiqueta flutuante (Tooltip). Usa isto sempre que tiveres dúvidas!</p> <p><b>Ações Visuais:</b> Clica e arrasta qualquer forma no tabuleiro. Usa a barra direita para alterar fundos e configurações de grelha.</p> </div> </div> <div class="step-content" id="step-2"> <h2 class="wiz-title">Animações e Trilhos Mágicos</h2> <div class="wiz-text"> <p>O verdadeiro poder do Motor V10 está em dar vida ao teu fluxograma.</p> <p><b>Itens Vivos:</b> Adiciona elementos da secção "Vivos". Estes movem-se autonomamente na versão exportada.</p> <p><b>Rotas Lógicas:</b> Seleciona uma forma, acede à ferramenta (🛠️) e cria um Trilho (ex: A1, A2). Depois, abre o <b>"🗺️ Mapa"</b> lateral para visualizar as linhas de rota que conectam a tua lógica!</p> </div> </div> <div class="step-content" id="step-3"> <h2 class="wiz-title">A Nova IA de Exportação</h2> <div class="wiz-text"> <p>Salvar o teu projeto é agora uma experiência cinematográfica e segura.</p> <p>Sempre que optares por exportar (PDF, PNG, HTML Player ou JSON), o nosso <b>Módulo Interativo</b> bloqueia o ecrã e processa os dados em tempo real, fornecendo informações textuais exatas antes de autorizar a extração.</p> </div> </div> <div class="step-content" id="step-4"> <h2 class="wiz-title">Notas de Atualização (Release V10)</h2> <div class="wiz-text" style="overflow-y:auto; padding-right:10px;"> <ul class="release-list"> <li><b>Segurança AES-GCM:</b> O backup JSON passou a exigir encriptação cruzada inquebrável por palavra-passe.</li> <li><b>Gerador Independente:</b> Criação de contas isolada num ficheiro leve, blindando o ambiente de utilizador base.</li> <li><b>Mitigação de Riscos:</b> Eliminação total de instaladores dinâmicos no lado do cliente.</li> <li><b>Motor Visual de Exportação:</b> Feedback vetorial rico estilo "IA processando" para todos os ficheiros.</li> <li><b>Onboarding Híbrido:</b> Implementação de dicas temporizadas (Tooltips) e deste assistente virtual integrado nativamente!</li> </ul> </div> </div> <div class="wizard-nav"> <button class="btn-wiz btn-wiz-prev" id="wiz-btn-prev" onclick="prevStep()" style="visibility:hidden;">← Anterior</button> <div style="color:#aaa; font-weight:bold; align-self:center;" id="wiz-counter">1 / 4</div> <button class="btn-wiz btn-wiz-next" id="wiz-btn-next" onclick="nextStep()">Próximo →</button> </div> </div> </div> </div>
+    <div id="wizard-overlay"> <div class="wizard-card"> <div class="wiz-close" onclick="closeWizard()">×</div> <div class="wizard-left"> <div class="mascot-box"> <svg viewBox="0 0 100 100" class="mascot-svg" width="100%" height="100%"> <rect x="20" y="30" width="60" height="50" rx="15" fill="#ffffff" /> <circle cx="50" cy="20" r="15" fill="#ffffff" /> <circle cx="50" cy="5" r="4" fill="#00ffff" /> <rect x="48" y="5" width="4" height="15" fill="#ffffff" /> <rect x="30" y="45" width="12" height="6" rx="3" fill="#6610f2" class="eye" /> <rect x="58" y="45" width="12" height="6" rx="3" fill="#6610f2" class="eye" /> <path d="M 40 65 Q 50 75 60 65" stroke="#6610f2" stroke-width="4" fill="none" stroke-linecap="round" /> <rect x="5" y="40" width="15" height="8" rx="4" fill="#ffffff" class="arm-left" /> <g class="arm-right"> <rect x="80" y="40" width="15" height="8" rx="4" fill="#ffffff" /> </g> </svg> </div> <h3 style="margin:0;">Guia Inteligente</h3> <p style="font-size:13px; opacity:0.8;">Vou ajudar-te a dominar a plataforma!</p> </div> <div class="wizard-right"> 
+        <div class="step-content active" id="step-1">
+            <h2 class="wiz-title">O Tabuleiro & Navegação 🗺️</h2>
+            <div class="wiz-text">
+                <p><b>Mover:</b> Clique e arraste o fundo infinito para navegar livremente.</p>
+                <p><b>Zoom:</b> Segure a tecla <code>Ctrl</code> e use a roda do mouse para aproximar ou afastar.</p>
+                <p><b>Controles:</b> Use o botão <b>🎯 Centralizar Tabuleiro</b> no painel para voltar ao meio, e as setas <b>↩ Desfazer / Refazer ↪</b> para corrigir erros.</p>
+            </div>
+        </div>
+        <div class="step-content" id="step-2">
+            <h2 class="wiz-title">Formas & Personalização 🎨</h2>
+            <div class="wiz-text">
+                <p><b>Criar:</b> Clique em qualquer bloco vazio (<b>+</b>) para abrir o Menu.</p>
+                <p><b>Escolher:</b> Navegue pelas abas (Geral, <b>✨ Vivos</b>, <b>⭐ Favoritos</b>) ou carregue uma <b>📷 Imagem do PC</b>.</p>
+                <p><b>Pintar & Girar:</b> No menu, use os seletores de cor de fundo/borda e os botões <b>↺ ↻</b> para rotacionar as formas 3D.</p>
+                <p><b>Excluir:</b> Passe o mouse sobre uma forma preenchida e clique no botão vermelho <b>-</b> no canto superior.</p>
+            </div>
+        </div>
+        <div class="step-content" id="step-3">
+            <h2 class="wiz-title">Conexões & Textos 🔗</h2>
+            <div class="wiz-text">
+                <p><b>Ligar Formas:</b> Clique na forma de origem, vá na aba <b>Conexões</b> e clique em <b>+ Conectar</b>. O painel avisará "SELECIONE O DESTINO". Clique na segunda forma.</p>
+                <p><b>Estilo:</b> Escolha se a linha é sólida, tracejada ou dupla (com duas setas).</p>
+                <p><b>Textos (Etiquetas):</b> Dê um <b>Duplo Clique</b> rápido em cima de qualquer conexão já desenhada para digitar o texto sobre ela!</p>
+            </div>
+        </div>
+        <div class="step-content" id="step-4">
+            <h2 class="wiz-title">Apresentação & Trilhas 🎬</h2>
+            <div class="wiz-text" style="overflow-y:auto; padding-right:10px;">
+                <p><b>Criar Rota:</b> Na aba <b>🛠️</b>, defina a ordem (ex: A1, A2). Você pode preencher a <b>Descrição do Passo</b>, que aparecerá como uma <b>narração no topo da tela</b> durante o show! Clique no <b>+ verde</b> para gravar.</p>
+                <p><b>Visão Geral:</b> Clique no botão <b>🗺️ Exibir Mapa de Trilhas</b> na barra lateral para ver o planejamento colorido das rotas.</p>
+                <p><b>O Show:</b> Pressione <b>▶️ APRESENTAR (PLAY)</b> para iniciar as animações.</p>
+            </div>
+        </div>
+        <div class="step-content" id="step-5">
+            <h2 class="wiz-title">Salvar & Exportar 💾</h2>
+            <div class="wiz-text">
+                <p><b>Modo Visualização:</b> Use o botão <b>👁️ Ver</b> para esconder as grades e analisar o resultado limpo.</p>
+                <p><b>Exportar Projeto:</b> Clique em <b>💾 Exportar</b>. A nossa IA de processamento será ativada.</p>
+                <p><b>Formatos:</b> Escolha <b>PNG</b> (Imagem), <b>PDF</b> (Documento), <b>HTML</b> (Player Interativo com todas as animações) ou <b>JSON</b> (Backup Protegido com senha).</p>
+            </div>
+        </div>
+        <div class="wizard-nav">
+            <button class="btn-wiz btn-wiz-prev" id="wiz-btn-prev" onclick="prevStep()" style="visibility:hidden;">← Anterior</button>
+            <div style="color:#aaa; font-weight:bold; align-self:center;" id="wiz-counter">1 / 5</div>
+            <button class="btn-wiz btn-wiz-next" id="wiz-btn-next" onclick="nextStep()">Próximo →</button>
+        </div>
+    </div> </div> </div>
 
     <script>
         // ============================================
@@ -3093,7 +3161,7 @@ async function exportStandalonePlayer() {
     #narration-bar{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.85);color:#fff;padding:15px 30px;border-radius:50px;font-size:18px;font-weight:500;text-align:center;max-width:80%;z-index:6000;display:none;opacity:0;transition:opacity 0.5s ease,transform 0.5s ease;box-shadow:0 5px 20px rgba(0,0,0,0.3);pointer-events:none;line-height:1.4}#narration-bar.visible{display:block;opacity:1;transform:translateX(-50%) translateY(0)}
     </style></head><body><header><div style="display:flex;align-items:center;gap:15px">${state.config.logo&&state.config.logo.length>100?`<img src="${state.config.logo}" style="height:40px">`:''}<h1 id="title">${state.config.title}</h1></div></header><div id="ws"><div id="grid"></div></div>
     <div id="narration-bar"></div>
-    <div id="ctrl"><button onclick="prev()">◀</button><span id="cnt" style="color:white;font-weight:bold"></span><button class="big" onclick="n()">▶</button></div><script>const D=JSON.parse('${jsonState}'),S=JSON.parse('${jsonShapes}'),CS=parseInt(D.config.cellSize);const g=document.getElementById('grid');let st=[],idx=-1;function init(){g.innerHTML='<svg id="conn" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#555"/></marker></defs></svg>';g.appendChild(document.createElement('div'));for(let c=0;c<D.config.cols;c++)g.appendChild(document.createElement('div'));for(let r=1;r<=D.config.rows;r++){g.appendChild(document.createElement('div'));for(let c=0;c<D.config.cols;c++){let id='cell-'+String.fromCharCode(65+c)+'-'+r,d=D.cellData[id],div=document.createElement('div');div.id=id;div.className='cell empty';if(d){if(d.mergedBy)div.className+=' merged-hidden';else{div.className='cell';if(d.merge){div.style.gridColumn='span '+d.merge.colSpan;div.style.gridRow='span '+d.merge.rowSpan}let s=S[d.shapeKey]||S['process'];div.innerHTML = \`<svg style="position:absolute;width:100%;height:100%;z-index:1" viewBox="0 0 100 100" preserveAspectRatio="none"><g fill="\${d.bg}" stroke="\${d.border}" stroke-width="2">\${s.path}</g></svg><div style="position:relative;z-index:2;text-align:center;width:90%;color:\${d.textColor};font-size:\${d.fontSize}px;font-weight:\${d.fontBold?'bold':'normal'};font-family:\${d.fontFamily};display:flex;align-items:center;justify-content:center;height:100%;line-height: 1.2; word-break: break-word; white-space: normal;">\${d.text}</div>\`;}}g.appendChild(div)}}const l=document.getElementById('conn');D.connections.forEach(c=>{let f=document.getElementById(c.from),t=document.getElementById(c.to);if(f&&t&&f.style.display!=='none'){let cf={x:f.offsetLeft+f.offsetWidth/2,y:f.offsetTop+f.offsetHeight/2},ct={x:t.offsetLeft+t.offsetWidth/2,y:t.offsetTop+t.offsetHeight/2};let dx=ct.x-cf.x,dy=ct.y-cf.y,len=Math.sqrt(dx*dx+dy*dy);if(len===0)return;let isB=D.connections.some(k=>k.from===c.to&&k.to===c.from);let sX=0,sY=0;if(isB){let amt=15;sX=(-dy/len)*amt;sY=(dx/len)*amt;}let off=len<90?len/2-5:(CS/2)+10;let ox=(dx/len)*off,oy=(dy/len)*off;let s1=cf.x+ox+sX,s2=cf.y+oy+sY,e1=ct.x-ox+sX,e2=ct.y-oy+sY,dX=e1-s1,dY=e2-s2,c1,c2,c3,c4;if(Math.abs(dX)>Math.abs(dY)){c1=s1+dX*0.5;c2=s2;c3=e1-dX*0.5;c4=e2}else{c1=s1;c2=s2+dY*0.5;c3=e1;c4=e2-dY*0.5}let p=document.createElementNS('http://www.w3.org/2000/svg','path');p.setAttribute('d',\`M \${s1} \${s2} C \${c1} \${c2}, \${c3} \${c4}, \${e1} \${e2}\`);p.setAttribute('fill','none');p.setAttribute('stroke','#555');p.setAttribute('stroke-width','2');if(c.style==='dashed')p.setAttribute('stroke-dasharray','5,5');if(c.hasArrow!==false)p.setAttribute('marker-end','url(#ah)');l.appendChild(p)}});
+    <div id="ctrl"><button onclick="prev()">◀</button><span id="cnt" style="color:white;font-weight:bold"></span><button class="big" onclick="n()">▶</button></div><script>const D=JSON.parse('${jsonState}'),S=JSON.parse('${jsonShapes}'),CS=parseInt(D.config.cellSize);const g=document.getElementById('grid');let st=[],idx=-1;function init(){g.innerHTML='<svg id="conn" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#555"/></marker></defs></svg>';g.appendChild(document.createElement('div'));for(let c=0;c<D.config.cols;c++)g.appendChild(document.createElement('div'));for(let r=1;r<=D.config.rows;r++){g.appendChild(document.createElement('div'));for(let c=0;c<D.config.cols;c++){let id='cell-'+String.fromCharCode(65+c)+'-'+r,d=D.cellData[id],div=document.createElement('div');div.id=id;div.className='cell empty';if(d){if(d.mergedBy)div.className+=' merged-hidden';else{div.className='cell';if(d.merge){div.style.gridColumn='span '+d.merge.colSpan;div.style.gridRow='span '+d.merge.rowSpan}let s=S[d.shapeKey]||S['process'];div.innerHTML = \`<svg style="position:absolute;width:100%;height:100%;z-index:1" viewBox="0 0 100 100" preserveAspectRatio="none"><g fill="\${d.bg}" stroke="\${d.border}" stroke-width="2">\${s.path}</g></svg><div style="position:relative;z-index:2;text-align:center;width:90%;color:\${d.textColor};font-size:\${d.fontSize}px;font-weight:\${d.fontBold?'bold':'normal'};font-family:\${d.fontFamily};display:flex;align-items:center;justify-content:center;height:100%;line-height: 1.2; word-break: break-word; white-space: normal;">\${d.text}</div>\`;}}g.appendChild(div)}}const l=document.getElementById('conn');D.connections.forEach((c,i)=>{let f=document.getElementById(c.from),t=document.getElementById(c.to);if(f&&t&&f.style.display!=='none'){let cf={x:f.offsetLeft+f.offsetWidth/2,y:f.offsetTop+f.offsetHeight/2},ct={x:t.offsetLeft+t.offsetWidth/2,y:t.offsetTop+t.offsetHeight/2};let dx=ct.x-cf.x,dy=ct.y-cf.y,len=Math.sqrt(dx*dx+dy*dy);if(len===0)return;let isB=D.connections.some(k=>k.from===c.to&&k.to===c.from);let sX=0,sY=0;let rw=f.offsetWidth;if(isB){let amt=rw*0.15;sX=(-dy/len)*amt;sY=(dx/len)*amt;}let off=len<rw?(len/2)-5:(rw/2)+5;let ox=(dx/len)*off,oy=(dy/len)*off;let s1=cf.x+ox+sX,s2=cf.y+oy+sY,e1=ct.x-ox+sX,e2=ct.y-oy+sY;let pathD='M '+s1+' '+s2+' L '+e1+' '+e2;let p=document.createElementNS('http://www.w3.org/2000/svg','path');p.setAttribute('d',pathD);p.setAttribute('fill','none');p.setAttribute('stroke','#555');p.setAttribute('stroke-width','2');if(c.style==='dashed')p.setAttribute('stroke-dasharray','5,5');if(c.hasArrow!==false)p.setAttribute('marker-end','url(#ah)');l.appendChild(p);if(c.label){let td=pathD;if(s1>e1)td='M '+e1+' '+e2+' L '+s1+' '+s2;let tr=document.createElementNS('http://www.w3.org/2000/svg','path');tr.setAttribute('id','tr-'+i);tr.setAttribute('d',td);tr.setAttribute('fill','none');tr.setAttribute('stroke','none');l.appendChild(tr);let te=document.createElementNS('http://www.w3.org/2000/svg','text');te.setAttribute('dy',s1>e1?'12':'-5');te.style.fill='#444';te.style.fontSize='12px';te.style.fontWeight='bold';te.style.pointerEvents='none';te.style.textShadow='0px 0px 4px white, 0px 0px 4px white';let tp=document.createElementNS('http://www.w3.org/2000/svg','textPath');tp.setAttributeNS('http://www.w3.org/1999/xlink','xlink:href','#tr-'+i);tp.setAttribute('startOffset','50%');tp.setAttribute('text-anchor','middle');tp.textContent=c.label;te.appendChild(tp);l.appendChild(te);}}});
     
     let allTags = new Set();
     for(let k in D.cellData){
@@ -3190,7 +3258,7 @@ async function exportStandalonePlayer() {
             if(isB){let amt=15;sX=(-dy/len)*amt;sY=(dx/len)*amt;}
             let off=len<90?len/2-5:(CS/2)+10;
             let ox=(dx/len)*off,oy=(dy/len)*off;
-            let s1=cf.x+ox+sX,s2=cf.y+oy+sY,e1=ct.x-ox+sX,e2=ct.y-oy+sY,dX=e1-s1,dY=e2-s2,c1,c2,c3,c4;if(Math.abs(dX)>Math.abs(dY)){c1=s1+dX*0.5;c2=s2;c3=e1-dX*0.5;c4=e2}else{c1=s1;c2=s2+dY*0.5;c3=e1;c4=e2-dY*0.5}let p=document.createElementNS('http://www.w3.org/2000/svg','path');p.setAttribute('d',\`M \${s1} \${s2} C \${c1} \${c2}, \${c3} \${c4}, \${e1} \${e2}\`);p.setAttribute('fill','none');p.setAttribute('class','flow');p.style.stroke=clr||'#fc0';let d=parseFloat(sp)||1.5;p.style.animationDuration=d+'s';document.getElementById('conn').appendChild(p);setTimeout(()=>p.remove(),d*1000);
+            let s1=cf.x+ox+sX,s2=cf.y+oy+sY,e1=ct.x-ox+sX,e2=ct.y-oy+sY;let p=document.createElementNS('http://www.w3.org/2000/svg','path');p.setAttribute('d', 'M ' + s1 + ' ' + s2 + ' L ' + e1 + ' ' + e2);p.setAttribute('fill','none');p.setAttribute('class','flow');p.style.stroke=clr||'#fc0';let d=parseFloat(sp)||1.5;p.style.animationDuration=d+'s';document.getElementById('conn').appendChild(p);setTimeout(()=>p.remove(),d*1000);
         }
     }
     window.onload=init;<\/script></body></html>`;
@@ -3583,14 +3651,8 @@ async function exportStandalonePlayer() {
         const deltaX = endX - startX;
         const deltaY = endY - startY;
 
-        let pathD = "";
-        if (Math.abs(deltaX) > Math.abs(deltaY)) {
-            const midX = startX + deltaX / 2;
-            pathD = `M ${startX} ${startY} C ${midX} ${startY} ${midX} ${endY} ${endX} ${endY}`;
-        } else {
-            const midY = startY + deltaY / 2;
-            pathD = `M ${startX} ${startY} C ${startX} ${midY} ${endX} ${midY} ${endX} ${endY}`;
-        }
+        // [Linhas Retas - Player] Desenha a rota de energia usando linha reta para seguir a nova padronização do Editor
+        const pathD = `M ${startX} ${startY} L ${endX} ${endY}`;
         
         const flowLine = document.createElementNS('http://www.w3.org/2000/svg', 'path'); 
         flowLine.setAttribute('d', pathD);
@@ -3678,21 +3740,27 @@ async function exportStandalonePlayer() {
             const length = Math.sqrt(dx*dx + dy*dy); 
             if(length === 0) return; 
 
-            // Lógica de Via Dupla
+            // [Cirurgia do Zoom] Verifica se existe seta de ida e volta (Via Dupla)
             const isBidir = connections.some(c => c.from === conn.to && c.to === conn.from); 
-            let shiftX = 0, shiftY = 0; 
-            if(isBidir) { 
-                const shiftAmt = 15; 
-                shiftX = (-dy / length) * shiftAmt; 
-                shiftY = (dx / length) * shiftAmt; 
-            } 
+            let shiftX = 0, shiftY = 0;
 
-            let currentCS = parseInt(document.getElementById('cfg-cell-size').value); 
-            let offset = length < 90 ? length / 2 - 5 : (currentCS / 2) + 10; 
+            // [Cirurgia do Zoom] Lê o tamanho REAL e visual da caixa na tela neste exato segundo
+            let realWidth = elFrom.offsetWidth;
 
-            const offX = (dx / length) * offset; const offY = (dy / length) * offset; 
-            
-            // Pontos calculados
+            if(isBidir) {
+                // [Cirurgia do Zoom] A separação das setas agora é 15% do tamanho real da caixa (encolhe e cresce com o zoom)
+                const shiftAmt = realWidth * 0.15;
+                shiftX = (-dy / length) * shiftAmt;
+                shiftY = (dx / length) * shiftAmt;
+            }
+
+            // [Cirurgia do Zoom] O offset respeita a distância real. Se estiverem coladas, a seta não atravessa a caixa
+            let offset = length < realWidth ? (length / 2) - 5 : (realWidth / 2) + 5;
+
+            const offX = (dx / length) * offset;
+            const offY = (dy / length) * offset;
+
+            // [Cirurgia do Zoom] Aplica as coordenadas finais blindadas contra distorções geométricas
             const startX = centerFrom.x + offX + shiftX;
             const startY = centerFrom.y + offY + shiftY;
             const endX = centerTo.x - offX + shiftX;
@@ -3701,20 +3769,8 @@ async function exportStandalonePlayer() {
             const deltaX = endX - startX;
             const deltaY = endY - startY;
 
-            // [Etiquetas] Variáveis para cálculo do ponto médio (Bezier)
-            let p1x, p1y, p2x, p2y;
-
-            // Curva Bezier
-            let pathD = "";
-            if (Math.abs(deltaX) > Math.abs(deltaY)) {
-                const midX = startX + deltaX / 2;
-                pathD = `M ${startX} ${startY} C ${midX} ${startY} ${midX} ${endY} ${endX} ${endY}`;
-                p1x = midX; p1y = startY; p2x = midX; p2y = endY; // [Etiquetas] Pontos de controle
-            } else {
-                const midY = startY + deltaY / 2;
-                pathD = `M ${startX} ${startY} C ${startX} ${midY} ${endX} ${midY} ${endX} ${endY}`;
-                p1x = startX; p1y = midY; p2x = endX; p2y = midY; // [Etiquetas] Pontos de controle
-            }
+            // [Linhas Retas] Desenha uma conexão reta impecável (M = Início, L = Linha até o Fim)
+            let pathD = `M ${startX} ${startY} L ${endX} ${endY}`;
 
             const path = document.createElementNS('http://www.w3.org/2000/svg', 'path'); 
             path.setAttribute('id', `conn-path-${index}`); // [Etiquetas] ID único para o textPath
@@ -3745,13 +3801,8 @@ async function exportStandalonePlayer() {
                 let textPathData = pathD; // [Etiquetas] Caminho padrão (igual à seta)
                 
                 if (startX > endX) { // [Etiquetas] Se a seta for para a esquerda, inverte o trilho para o texto não ficar de cabeça para baixo
-                    if (Math.abs(deltaX) > Math.abs(deltaY)) {
-                        const midX = startX + deltaX / 2;
-                        textPathData = `M ${endX} ${endY} C ${midX} ${endY} ${midX} ${startY} ${startX} ${startY}`;
-                    } else {
-                        const midY = startY + deltaY / 2;
-                        textPathData = `M ${endX} ${endY} C ${endX} ${midY} ${startX} ${midY} ${startX} ${startY}`;
-                    }
+                    // [Linhas Retas] Inverte a rota da linha reta para que o texto nunca fique de cabeça para baixo
+                    textPathData = `M ${endX} ${endY} L ${startX} ${startY}`;
                 }
 
                 // [Etiquetas] Cria um caminho invisível para servir de trilho ao texto
@@ -3882,7 +3933,7 @@ async function exportStandalonePlayer() {
         function uploadLogo() { const file = document.getElementById('cfg-logo').files[0]; if (file) { const reader = new FileReader(); reader.onload = (e) => { document.getElementById('company-logo').src = e.target.result; document.getElementById('company-logo').style.display = 'block'; }; reader.readAsDataURL(file); } }
         // --- TÍTULO: MOTOR DE FUNCIONAMENTO DO ASSISTENTE E CARROSSEL (ETAPA 4) --- //
         let currentWizStep = 1; // [Etapa 4: JS] Memória RAM virtual que recorda a página atual do utilizador
-        const totalWizSteps = 4; // [Etapa 4: JS] Limite estático de lições existentes no onboarding
+        const totalWizSteps = 5; // [Novo Tutorial] Expandido de 4 para 5 passos essenciais para cobrir 100% das ferramentas
 
         function openWizard() { // [Etapa 4: JS] Gatilho invocado ao clicar no botão de interrogação no cabeçalho
             document.getElementById('wizard-overlay').classList.add('active'); // [Etapa 4: JS] Acende o holofote principal do ecrã chamando o painel oculto
@@ -4427,7 +4478,9 @@ async function exportStandalonePlayer() {
                 currentRotation = 0;
             }
             document.getElementById('input-rotation').value = currentRotation; updateConnectionList(cell.id);
-            const rect = cell.getBoundingClientRect(); let leftPos = rect.left + window.scrollX + 50; if (rect.right + 340 > window.innerWidth) leftPos = rect.left - 340 + 20; contextMenu.style.left = `${leftPos}px`; contextMenu.style.top = `${rect.top + window.scrollY}px`; contextMenu.style.display = 'block';
+            const rect = cell.getBoundingClientRect(); let leftPos = rect.left + window.scrollX + 50; 
+            if (rect.right + 400 > window.innerWidth) leftPos = rect.left - 400 + 20; // [Menu Móvel] Atualiza a matemática de colisão para a nova largura de 400px
+            contextMenu.style.left = `${leftPos}px`; contextMenu.style.top = `${rect.top + window.scrollY}px`; contextMenu.style.display = 'block';
         }
         function closeMenu() { 
             contextMenu.style.display = 'none'; 
@@ -4676,6 +4729,31 @@ function loadProject() { // [Carregamento] Função inicial de resgate
                 alert("Por favor, selecione uma célula novamente antes de carregar a imagem."); // [Imagens] Alerta amigável ao utilizador
             } // [Imagens] Fim da verificação
         } // [Imagens] Fim da função corrigida
+
+        // [Menu Móvel] Início do Motor de Arrastar o Painel Flutuante
+        let isDraggingMenu = false; // [Menu Móvel] Flag que indica se o usuário está segurando o menu
+        let menuDragOffsetX = 0; // [Menu Móvel] Distância X entre o clique e a borda do menu
+        let menuDragOffsetY = 0; // [Menu Móvel] Distância Y entre o clique e a borda do menu
+        const dragHandleBtn = document.querySelector('.menu-drag-handle'); // [Menu Móvel] Seleciona a NOVA alça de transporte dedicada no topo
+
+        dragHandleBtn.addEventListener('mousedown', (e) => { // [Menu Móvel] Escuta quando o usuário clica e segura na ALÇA DEDICADA
+            isDraggingMenu = true; // [Menu Móvel] Ativa a flag de arraste
+            dragHandleBtn.style.cursor = 'grabbing'; // Fecha a mão na alça
+            menuDragOffsetX = e.clientX - contextMenu.getBoundingClientRect().left; // [Menu Móvel] Calcula a posição exata do clique X na alça
+            menuDragOffsetY = e.clientY - contextMenu.getBoundingClientRect().top; // [Menu Móvel] Calcula a posição exata do clique Y na alça
+        }); // [Menu Móvel] Fim do evento de início de arraste
+
+        document.addEventListener('mousemove', (e) => { // [Menu Móvel] Escuta o movimento global do mouse na tela
+            if (!isDraggingMenu) return; // [Menu Móvel] Se não estiver segurando o menu, ignora a função
+            e.preventDefault(); // [Menu Móvel] Evita que textos sejam selecionados acidentalmente durante o arraste
+            contextMenu.style.left = (e.clientX - menuDragOffsetX + window.scrollX) + 'px'; // [Menu Móvel] Move fisicamente o menu no eixo X
+            contextMenu.style.top = (e.clientY - menuDragOffsetY + window.scrollY) + 'px'; // [Menu Móvel] Move fisicamente o menu no eixo Y
+        }); // [Menu Móvel] Fim do evento de movimento contínuo
+
+        document.addEventListener('mouseup', () => { // [Menu Móvel] Escuta o momento em que o usuário solta o botão do mouse
+            isDraggingMenu = false; // [Menu Móvel] Desliga a flag de arraste
+            dragHandleBtn.style.cursor = 'grab'; // [Menu Móvel] Abre a mãozinha na alça novamente
+        }); // [Menu Móvel] Fim do motor de arraste
 
         // Inicializa sistema
         window.onload = () => { initApp(); renderFavorites(); };
