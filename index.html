@@ -155,8 +155,60 @@
         .grid-cell.empty:hover::after { color: #28a745; }
         .grid-cell.filled { border: none; background: transparent; cursor: default; }
         
+        /* [Bloqueio de Seleção] Impede que o navegador tente copiar textos ao arrastar */
+        #workspace, #grid-container, .grid-cell, .collapse-btn, svg text, .conn-label {
+            user-select: none !important;
+            -webkit-user-select: none !important; /* Para navegadores baseados em WebKit (Safari/Chrome) */
+            -moz-user-select: none !important; /* Para Firefox */
+        }
+
+        /* [Exceção de Seleção] Garante que inputs e textos editáveis continuem a funcionar normalmente */
+        #grid-container input, #grid-container textarea, #grid-container [contenteditable="true"], .grid-cell [contenteditable="true"] {
+            user-select: text !important;
+            -webkit-user-select: text !important;
+            -moz-user-select: text !important;
+            cursor: text;
+        }
+
         .cell-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; transition: transform 0.3s ease; transform-origin: center center; }
-        .cell-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2; text-align: center; width: 85%; max-height: 80%; overflow-wrap: break-word; pointer-events: none; line-height: 1.2; white-space: normal; }
+.shape-content {
+    width: 100%; /* Define que a caixa ocupa a largura total da forma */
+    height: 100%; /* Define que a caixa ocupa a altura total da forma */
+    box-sizing: border-box; /* Garante que as margens não estorem o limite do container */
+    
+    /* [A Mágica da Zona de Segurança] */
+    padding: 18%; /* Aplica 18% de margem invisível em todos os lados (espremendo o texto para o centro e evitando que vaze em losangos/hexágonos) */
+    
+    display: flex; /* Ativa o motor magnético de alinhamento */
+    flex-direction: column; /* Empilha o texto de cima para baixo */
+    justify-content: center; /* Trava o texto no centro vertical exato */
+    align-items: center; /* Trava o texto no centro horizontal exato */
+    text-align: center; /* Centraliza a digitação de cada parágrafo */
+    
+    position: relative; /* Prepara a camada para ficar sobreposta */
+    z-index: 10; /* Força o texto a ficar SEMPRE na frente do desenho da forma */
+    
+    outline: none; /* Esconde a borda azul feia que aparece ao clicar para digitar */
+    word-wrap: break-word; /* Força a quebra de linha quando uma palavra for maior que a Zona de Segurança */
+    font-size: 14px; /* Tamanho da fonte */
+    color: #333; /* Cor do texto em cinza escuro para boa leitura */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Fonte profissional limpa */
+}
+
+/* [Nova Arquitetura de Imagem] Estilo da forma quando ela é uma imagem */
+.shape-image {
+    background-size: cover; /* Faz a foto preencher todo o quadrado sem distorcer */
+    background-position: center; /* Centraliza o foco da foto */
+    background-repeat: no-repeat;
+    border: 1px dashed #ccc; /* Borda suave para indicar limite caso a imagem seja branca */
+    border-radius: 8px; /* Cantos levemente arredondados para um visual moderno */
+    background-color: transparent;
+}
+
+        /* [Tamanhos Múltiplos] Estilos para os botões de escala P, M, G */
+        .size-btn-group { display: flex; gap: 10px; margin-bottom: 15px; } /* Agrupa os botões lado a lado */
+        .size-btn { flex: 1; padding: 6px; border: 1px solid #ccc; background: #fff; border-radius: 4px; cursor: pointer; font-weight: bold; color: #555; } /* Estilo base do botão */
+        .size-btn.active { background: #007bff; color: white; border-color: #007bff; } /* Destaque azul para o tamanho selecionado */
 
         .delete-btn { display: none; position: absolute; top: -10px; right: -10px; width: 24px; height: 24px; background: #dc3545; color: white; border-radius: 50%; text-align: center; line-height: 22px; cursor: pointer; z-index: 100; font-weight: bold; }
         #grid-container:not(.preview-mode) .grid-cell.filled:hover .delete-btn { display: block; }
@@ -317,7 +369,7 @@
         /* TÍTULO: ESTILOS PARA BARRA DE NARRAÇÃO (ETAPA 4) */
         #narration-bar {
             position: fixed;
-            top: 20px; /* TÍTULO: MOVIMENTAÇÃO DO BANNER PARA O TOPO (ETAPA 3) */
+            top: 60px; /* TÍTULO: MOVIMENTAÇÃO DO BANNER PARA O TOPO (ETAPA 3) */
             left: 50%;
             transform: translateX(-50%);
             background: rgba(0, 0, 0, 0.85);
@@ -412,6 +464,38 @@
         }
         .toolbar-btn:hover:not(:disabled) { background: #e2e6ea; color: #333; }
         .toolbar-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* --- SISTEMA DE RAMIFICAÇÃO (MÃE E FILHA) --- */
+        .collapse-btn { /* [Ramificação] O botão de Expandir/Encolher */
+            position: absolute; /* [Ramificação] Fica colado na forma */
+            bottom: -10px; left: -10px; /* [Ramificação] Canto inferior esquerdo */
+            width: 22px; height: 22px; /* [Ramificação] Tamanho do círculo */
+            border-radius: 50%; /* [Ramificação] Deixa redondo */
+            background: #ffffff; /* [Ramificação] Fundo branco */
+            border: 2px solid var(--primary-color, #007bff); /* [Ramificação] Borda com cor do tema */
+            color: var(--text-header, #333); /* [Ramificação] Cor do ícone */
+            cursor: pointer; /* [Ramificação] Mãozinha ao passar o mouse */
+            z-index: 30; /* [Ramificação] Fica acima de tudo na célula */
+            font-weight: bold; font-size: 14px; /* [Ramificação] Tamanho do + e - */
+            display: flex; align-items: center; justify-content: center; /* [Ramificação] Centraliza o texto */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2); /* [Ramificação] Sombrinha elegante */
+            transition: all 0.2s; /* [Ramificação] Animação suave ao passar o mouse */
+        }
+        .collapse-btn:hover { /* [Ramificação] Efeito ao passar o mouse */
+            background: var(--primary-color, #007bff); /* [Ramificação] Pinta o fundo */
+            color: #ffffff; /* [Ramificação] Pinta o texto de branco */
+            transform: scale(1.1); /* [Ramificação] Dá um pequeno zoom */
+        }
+        /* [Ramificação] MÁGICA: A Célula Fantasma */
+        .node-hidden { 
+            visibility: hidden !important; /* [Ramificação] Fica invisível */
+            opacity: 0 !important; /* [Ramificação] Some da tela */
+            pointer-events: none !important; /* [Ramificação] Ignora qualquer clique do mouse */
+        }
+        /* [Ramificação] Ocultar as linhas conectadas às células fantasmas */
+        .line-hidden {
+            display: none !important; /* [Ramificação] Desaparece com o SVG da linha */
+        }
     </style>
 </head>
 <body>
@@ -626,6 +710,9 @@
                 </optgroup>
             </select>
             <div class="shape-grid" id="shape-grid-static"></div>
+            <div style="display:flex; gap:8px; margin-top:8px;">
+                <div class="shape-opt" title="Inserir Imagem" onclick="triggerImageShape(this)">🖼️</div>
+            </div>
             <input type="hidden" id="input-shape-type" value="process">
         </div>
         <div class="control-row">
@@ -776,6 +863,14 @@
     </div>
 </div>
 <div class="menu-footer"><button class="btn-save" onclick="applyChanges()">Salvar</button></div>
+<div class="menu-footer">
+    <div class="menu-label" style="margin-top: 10px;">Tamanho da Forma</div>
+    <div class="size-btn-group">
+        <button class="size-btn active" onclick="setShapeSize(1.9, this)">P</button>
+        <button class="size-btn" onclick="setShapeSize(3, this)">M</button>
+        <button class="size-btn" onclick="setShapeSize(4, this)">G</button>
+    </div>
+    <button class="btn-save" onclick="applyChanges()">Salvar</button></div>
     </div>
 
     <div id="presentation-controls">
@@ -794,8 +889,8 @@
             <h2>Exportar Projeto</h2>
             <input type="text" id="export-filename" value="Fluxograma" style="font-size:16px; padding:10px; width:100%; margin-bottom:20px;">
             <div class="export-options">
-                <button class="btn-export-opt" onclick="exportToImageCustom()"><b>PNG</b><br>Imagem</button>
-                <button class="btn-export-opt" onclick="exportToPDFCustom()"><b>PDF</b><br>Documento</button>
+                <button class="btn-export-opt" onclick="exportPNG()"><b>PNG</b><br>Imagem</button>
+                <button class="btn-export-opt" onclick="exportPDF()"><b>PDF</b><br>Documento</button>
                 <button class="btn-export-opt" onclick="exportStandalonePlayer()"><b>HTML</b><br>Player</button>
                 <button class="btn-export-opt" onclick="downloadProjectBackup()"><b>JSON</b><br>Backup Protegido</button>
             </div>
@@ -867,6 +962,9 @@
     // Título: Inicialização do banco de dados vazio para o cliente
     let users = JSON.parse(localStorage.getItem('flux_db_users')) || []; // Inicia vazio se não houver cache
         let currUser = null;
+        let selectedImage = null; // [Imagens] Variável global para imagem selecionada
+        let selectedShape = null; // [Formas] Variável global para forma selecionada
+        let shapeImageData = null; // Guarda o Base64 apenas para a forma atual
 
         // --- SISTEMA DE CRIPTOGRAFIA DE ARQUIVOS (AES-GCM) ---
         async function generateKey(password, salt) {
@@ -2892,6 +2990,7 @@
         const connectionsLayer = document.getElementById('connections-layer');
         
         let activeCell = null;
+        let memoryImageCell = null; // [Nova Arquitetura] Memória para imagem
         let targetCellForImage = null; // [Imagens] Âncora para não perder a célula durante o upload
         let cellData = {}; 
         let connections = []; 
@@ -2909,6 +3008,8 @@
         let currentSequences = []; // Armazena as trilhas da célula ativa
         // TÍTULO: VARIÁVEL GLOBAL PARA MAPA DE TRILHAS (ETAPA 2)
         let showPresentationMap = false;
+        // TÍTULO: VARIÁVEIS DE CÂMERA INTERNA (ETAPA 3)
+        let internalPosX = 0, internalPosY = 0;
 
         // --- HISTÓRICO (UNDO/REDO) ---
         let undoStack = []; // [Histórico] Pilha de memória que guarda os estados passados do tabuleiro
@@ -3106,38 +3207,309 @@
             });
         }
 
-        // --- TÍTULO: SUBSTITUIÇÃO DAS FUNÇÕES DE EXPORTAÇÃO --- //
-        async function exportToImageCustom() { // [Modificado] Função original para PNG
-            closeExportModal(); // Esconde as opções de escolha antigas
-            await iniciarExportacaoAnimada(); // CONGELA e exibe a nossa IA por 8 segundos
-            const name = document.getElementById('export-filename').value || "fluxograma"; // Captura o nome
-            const canvas = await captureFullProject(); // Tira a foto do tabuleiro
-            const link = document.createElement('a'); // Cria link
-            link.download = name + '.png'; // Nomeia
-            link.href = canvas.toDataURL("image/png"); // Converte
-            link.click(); // Baixa!
+        // --- TÍTULO: MOTOR DE CAPTURA DEFINITIVO (MATEMÁTICA PURA) --- //
+        async function capturarImagemLimpa() {
+            // [Motor] Fecha o menu flutuante caso esteja aberto
+            if (typeof closeMenu === 'function') closeMenu();
+            
+            // [Motor] Captura o container principal do tabuleiro
+            const grid = document.getElementById('grid-container');
+            // [Motor] Verifica se estava no modo de visualização (sem grades)
+            const wasInPreview = grid.classList.contains('preview-mode');
+            
+            // [Motor] Salva o zoom atual na memória
+            const zoomInput = document.getElementById('cfg-cell-size');
+            const zoomOriginal = zoomInput ? zoomInput.value : 150;
+            // [Motor] Salva o deslocamento (Pan) original na memória
+            const transformOriginal = grid.style.transform;
+            // [Motor] Salva a largura original
+            const widthOriginal = grid.style.width;
+
+            // [Motor] MAGIA: Ativa a classe CSS que esconde toda a interface automaticamente!
+            document.body.classList.add('exporting'); 
+            
+            // [Motor] Reseta o zoom temporariamente para 100% (escala 150)
+            if (zoomInput) zoomInput.value = 150;
+            // [Motor] Atualiza as células para o tamanho padrão
+            if (typeof updateLayout === 'function') updateLayout(); 
+            // [Motor] Remove o deslocamento para a câmera tirar a foto reta
+            grid.style.transform = 'none'; 
+            // [Motor] Força a largura a abraçar todo o conteúdo sem cortar
+            grid.style.width = 'max-content'; 
+            
+            // [Motor] Oculta as grades vazias para a foto ficar limpa
+            if (!wasInPreview && typeof togglePreviewMode === 'function') {
+                togglePreviewMode(); 
+            }
+
+            // [Motor] Pausa de 150ms para o navegador renderizar as mudanças visuais
+            await new Promise(r => setTimeout(r, 150)); 
+
+            // [Motor] Busca todas as células que têm conteúdo
+            const celulas = document.querySelectorAll('.grid-cell.filled');
+            // [Motor] Aborta se o tabuleiro estiver vazio
+            if (celulas.length === 0) {
+                alert('O tabuleiro está vazio!');
+                restaurarCenario();
+                return null;
+            }
+
+            // [Motor] RADAR MATEMÁTICO: Mede a posição real lendo a placa mãe (imune ao zoom)
+            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+            celulas.forEach(c => {
+                // [Motor] Lê a distância da célula até a margem esquerda original
+                const left = c.offsetLeft;
+                // [Motor] Lê a distância da célula até o topo original
+                const top = c.offsetTop;
+                // [Motor] Calcula onde a célula termina na direita
+                const right = left + c.offsetWidth;
+                // [Motor] Calcula onde a célula termina em baixo
+                const bottom = top + c.offsetHeight;
+
+                // [Motor] Atualiza as fronteiras máximas do desenho
+                if (left < minX) minX = left;
+                if (top < minY) minY = top;
+                if (right > maxX) maxX = right;
+                if (bottom > maxY) maxY = bottom;
+            });
+
+            // [Motor] Define uma margem de segurança de 80px ao redor do desenho
+            const margem = 80; 
+            // [Motor] Calcula a área exata do corte final
+            const area = { 
+                x: Math.max(0, minX - margem), 
+                y: Math.max(0, minY - margem), 
+                width: (maxX - minX) + (margem * 2), 
+                height: (maxY - minY) + (margem * 2) 
+            };
+
+            // [Motor] Inicia a animação da IA e espera a barra chegar a 100%
+            await iniciarExportacaoAnimada(); 
+
+            // [Motor] Tira a foto focando APENAS no grid (esquece o body e menus)
+            const canvas = await html2canvas(grid, {
+                x: area.x,
+                y: area.y,
+                width: area.width,
+                height: area.height,
+                backgroundColor: '#ffffff',
+                scale: 2, // [Motor] Aplica alta resolução 4K
+                ignoreElements: (el) => el.id === 'ai-export-overlay' // [Motor] Impede a tela preta da IA de tapar a foto
+            });
+
+            // [Motor] Função interna para devolver tudo ao normal sem o usuário perceber
+            function restaurarCenario() {
+                // [Motor] Remove a classe que escondia a interface
+                document.body.classList.remove('exporting');
+                // [Motor] Devolve o arraste original para a tela voltar ao lugar
+                grid.style.transform = transformOriginal || `translate(var(--pos-x), var(--pos-y))`;
+                // [Motor] Devolve a largura original
+                grid.style.width = widthOriginal || '';
+                
+                // [Motor] Devolve o zoom original à barra de controle
+                if (zoomInput) zoomInput.value = zoomOriginal;
+                // [Motor] Manda o motor recalcular o tamanho das células
+                if (typeof updateLayout === 'function') updateLayout();
+                
+                // [Motor] Devolve as grades se elas estavam visíveis antes
+                if (!wasInPreview && typeof togglePreviewMode === 'function') {
+                    togglePreviewMode();
+                }
+            }
+            
+            // [Motor] Executa a restauração final
+            restaurarCenario(); 
+
+            // [Motor] Devolve a foto pronta para o botão PNG ou PDF
+            return { canvas, area };
         }
 
-        async function exportToPDFCustom() { // [Modificado] Função original para PDF
-            closeExportModal(); // Esconde as opções
-            await iniciarExportacaoAnimada(); // CONGELA e exibe a nossa IA por 8 segundos
-            const name = document.getElementById('export-filename').value || "fluxograma"; // Captura o nome
-            const canvas = await captureFullProject(); // Tira a foto
-            const imgWidthMm = canvas.width * 0.264583 / 2; // Calcula a largura exata
-            const imgHeightMm = canvas.height * 0.264583 / 2; // Calcula a altura exata
-            const { jsPDF } = window.jspdf; // Importa motor
-            const orientation = imgWidthMm > imgHeightMm ? 'l' : 'p'; // Define rotação
-            const pdf = new jsPDF({ orientation: orientation, unit: 'mm', format: [imgWidthMm, imgHeightMm] }); // Monta página
-            const imgData = canvas.toDataURL('image/jpeg', 0.9); // Otimiza imagem
-            pdf.addImage(imgData, 'JPEG', 0, 0, imgWidthMm, imgHeightMm); // Cola imagem
-            pdf.save(name + '.pdf'); // Baixa!
+        // --- TÍTULO: EXPORTAÇÃO PNG DEFINITIVA --- //
+        async function exportPNG() {
+            // [PNG] Chama o motor de captura infalível e espera ele terminar
+            const captura = await capturarImagemLimpa();
+            // [PNG] Se falhar ou o quadro estiver vazio, cancela a operação silenciosamente
+            if (!captura) return;
+            // [PNG] Cria um link virtual de download
+            const link = document.createElement('a');
+            // [PNG] Define o nome que o arquivo vai ter no PC do usuário
+            link.download = 'meu_fluxograma.png';
+            // [PNG] Converte a foto gerada pelo motor em arquivo PNG real
+            link.href = captura.canvas.toDataURL('image/png');
+            // [PNG] Simula o clique automático para iniciar o download
+            link.click();
         }
+
+        // --- TÍTULO: EXPORTAÇÃO PDF DEFINITIVA --- //
+        async function exportPDF() {
+            // [PDF] Chama o motor de captura e espera ele terminar
+            const captura = await capturarImagemLimpa();
+            // [PDF] Se houver erro ou vazio, cancela a operação
+            if (!captura) return;
+            // [PDF] Pega a foto gerada pelo motor
+            const imgData = captura.canvas.toDataURL('image/png');
+            // [PDF] Verifica se o desenho é mais largo (paisagem) ou mais alto (retrato)
+            const orientacao = captura.area.width > captura.area.height ? 'l' : 'p';
+            // [PDF] Cria a folha PDF cortada no tamanho exato do seu projeto
+            const pdf = new window.jspdf.jsPDF({ orientation: orientacao, unit: 'px', format: [captura.area.width, captura.area.height] });
+            // [PDF] Cola a foto esticada cobrindo 100% da folha criada
+            pdf.addImage(imgData, 'PNG', 0, 0, captura.area.width, captura.area.height);
+            // [PDF] Dispara o download automático do PDF
+            pdf.save('meu_fluxograma.pdf');
+        }
+
+        // --- TÍTULO: MOTOR DE NAVEGAÇÃO DO PLAYER (MÃOZINHA E ZOOM) --- //
+        const SCRIPT_PAN_ZOOM_PLAYER = `
+        <script>
+            // [Motor Interativo] Mãozinha, Pan e Zoom para o Player
+            window.addEventListener('DOMContentLoaded', () => {
+                const ws = document.getElementById('ws'); // [Motor] Pega a tela
+                const grid = document.getElementById('grid'); // [Motor] Pega a grade
+                if (!ws || !grid) return;
+
+                // [CSS Dinâmico] Mata as barras de rolagem e prepara a área de arraste
+                ws.style.overflow = 'hidden';
+                ws.style.cursor = 'grab';
+                ws.style.position = 'relative';
+                ws.style.display = 'block'; // [Motor] Remove flex para liberar o Pan
+                
+                // [CSS Dinâmico] Libera o grid para voar na tela
+                grid.style.position = 'absolute';
+                grid.style.transformOrigin = '0 0';
+
+                let isPanning = false, startX, startY, initialX, initialY;
+                let posX = 0, posY = 0, scale = 1;
+
+                function updateCamera() { // [Motor] Aplica matemática na tela
+                    grid.style.transform = 'translate(' + posX + 'px, ' + posY + 'px) scale(' + scale + ')';
+                }
+
+                // [Foco Dinâmico] Expondo função para centralizar elementos externamente (Modo Slide)
+                window.focusOnElement = function(el) {
+                    if (!el) return;
+                    // Calcula o centro do elemento relativo ao grid
+                    const cx = el.offsetLeft + el.offsetWidth / 2;
+                    const cy = el.offsetTop + el.offsetHeight / 2;
+                    
+                    // Centraliza na tela: (Tela/2) - (Elemento * Scale)
+                    posX = (ws.clientWidth / 2) - (cx * scale);
+                    posY = (ws.clientHeight / 2) - (cy * scale);
+                    
+                    // Aplica transição suave para o efeito de voo
+                    grid.style.transition = 'transform 0.8s cubic-bezier(0.25, 1, 0.5, 1)';
+                    updateCamera();
+                    
+                    // Remove a transição após o voo para não atrapalhar o Pan manual
+                    setTimeout(() => { grid.style.transition = ''; }, 800);
+                };
+
+                // [Foco Automático] Calcula onde estão as formas e centraliza tudo
+                function centralizar() {
+                    const cells = Array.from(document.querySelectorAll('.cell:not(.empty)'));
+                    if(cells.length === 0) return;
+                    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+                    cells.forEach(c => { // [Motor] Bounding Box
+                        if (c.offsetLeft < minX) minX = c.offsetLeft;
+                        if (c.offsetTop < minY) minY = c.offsetTop;
+                        if (c.offsetLeft + c.offsetWidth > maxX) maxX = c.offsetLeft + c.offsetWidth;
+                        if (c.offsetTop + c.offsetHeight > maxY) maxY = c.offsetTop + c.offsetHeight;
+                    });
+                    const w = maxX - minX + 200; // Margem
+                    const h = maxY - minY + 200; // Margem
+                    const scaleX = ws.clientWidth / w;
+                    const scaleY = ws.clientHeight / h;
+                    scale = Math.min(scaleX, scaleY, 1); // [Motor] Ajusta o zoom
+                    posX = (ws.clientWidth / 2) - (((maxX + minX) / 2) * scale);
+                    posY = (ws.clientHeight / 2) - (((maxY + minY) / 2) * scale);
+                    updateCamera(); // [Motor] Executa
+                }
+
+                // [Foco Automático/Olho Mágico] Vigia a apresentação e voa para a forma ativa
+                const observer = new MutationObserver((mutations) => {
+                    mutations.forEach((mutation) => {
+                        if (mutation.attributeName === 'class') {
+                            const el = mutation.target;
+                            if (el.classList.contains('active')) {
+                                // Calcula o centro geométrico da forma
+                                const centerX = el.offsetLeft + (el.offsetWidth / 2);
+                                const centerY = el.offsetTop + (el.offsetHeight / 2);
+                                
+                                // Calcula a posição da câmera para cravar a forma no meio da tela
+                                posX = (ws.clientWidth / 2) - (centerX * scale);
+                                posY = (ws.clientHeight / 2) - (centerY * scale);
+                                
+                                // Faz o voo suave estilo Prezi
+                                grid.style.transition = 'transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)';
+                                updateCamera();
+                                
+                                // Remove a transição depois para não atrapalhar o arraste da mãozinha
+                                setTimeout(() => { grid.style.transition = 'none'; }, 500);
+                            }
+                        }
+                    });
+                });
+
+                // Liga o "Olho Mágico" em todas as formas desenhadas
+                document.querySelectorAll('.cell:not(.empty)').forEach(c => {
+                    observer.observe(c, { attributes: true });
+                });
+
+                // [Eventos] Mãozinha (Com Proteção Global de UI)
+                ws.addEventListener('mousedown', (e) => {
+                    // Se o clique for no cabeçalho, narrador, botões, links ou qualquer div com ação, ignora o arraste!
+                    if(e.target.closest('#narration-bar, header, button, a, .btn, [onclick], svg')) return; 
+                    
+                    isPanning = true; 
+                    startX = e.clientX; startY = e.clientY;
+                    initialX = posX; initialY = posY;
+                    ws.style.cursor = 'grabbing'; // Fecha a mão
+                });
+
+                window.addEventListener('mousemove', (e) => {
+                    if (!isPanning) return;
+                    e.preventDefault(); // Evita que o navegador tente selecionar textos enquanto arrasta
+                    posX = initialX + (e.clientX - startX); 
+                    posY = initialY + (e.clientY - startY);
+                    updateCamera();
+                });
+
+                window.addEventListener('mouseup', () => { 
+                    isPanning = false; 
+                    if(ws) ws.style.cursor = 'grab'; // Abre a mão com segurança
+                });
+
+                // [Eventos] Zoom com Scroll
+                ws.addEventListener('wheel', (e) => {
+                    if (e.ctrlKey) {
+                        e.preventDefault();
+                        const oldScale = scale;
+                        scale += e.deltaY < 0 ? 0.1 : -0.1;
+                        scale = Math.max(0.1, Math.min(scale, 3));
+                        posX = e.clientX - (e.clientX - posX) * (scale / oldScale);
+                        posY = e.clientY - (e.clientY - posY) * (scale / oldScale);
+                        updateCamera();
+                    }
+                }, { passive: false });
+
+                // [Arranque] Centraliza 300ms após abrir para garantir que tudo renderizou
+                setTimeout(centralizar, 300); 
+            });
+        <\/script>
+        `;
 
         // --- TÍTULO: PLAYER HTML EXPORTADO COM CURVAS INTELIGENTES (FIGMA STYLE) E VIAS DUPLAS --- //
 async function exportStandalonePlayer() { 
     closeExportModal(); 
     await iniciarExportacaoAnimada(); 
     const name = document.getElementById('export-filename').value || "apresentacao"; 
+    
+    // [Export] Captura estado de ocultação (ramificação) para o player
+    for(let id in cellData) {
+        const el = document.getElementById(id);
+        if(el && el.classList.contains('node-hidden')) cellData[id].hidden = true;
+        else delete cellData[id].hidden;
+    }
+
     const state = { cellData, connections, config: { 
         rows: document.getElementById('cfg-rows').value, cols: document.getElementById('cfg-cols').value, 
         cellSize: document.getElementById('cfg-cell-size').value, gridGap: document.getElementById('cfg-grid-gap').value,
@@ -3157,15 +3529,20 @@ async function exportStandalonePlayer() {
     .active{z-index:10;border-radius:12px; animation: p 1.5s infinite;}
     .active svg{transform:scale(1.1)}
     @keyframes p{0%{transform:scale(1);box-shadow:0 0 10px currentColor}50%{transform:scale(1.05);box-shadow:0 0 40px currentColor}100%{transform:scale(1);box-shadow:0 0 10px currentColor}}
+    .collapse-btn { position: absolute; bottom: -10px; left: -10px; width: 22px; height: 22px; border-radius: 50%; background: #ffffff; border: 2px solid #007bff; color: #333; cursor: pointer; z-index: 30; font-weight: bold; font-size: 14px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+    .node-hidden { visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; }
+    .line-hidden { display: none !important; }
     #ctrl{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#2c3e50;padding:15px 30px;border-radius:50px;display:flex;gap:20px;z-index:5000}button{background:transparent;border:2px solid rgba(255,255,255,0.3);color:white;width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:18px;transition:0.2s}button:hover{background:white;color:#333}.big{width:50px;height:50px;background:#28a745;border:none;font-size:24px}.flow{fill:none;stroke-width:5px;stroke-linecap:round;stroke-dasharray:30 1000;stroke-dashoffset:30;animation:f 3s linear forwards;opacity:0.9;filter:drop-shadow(0 0 5px white);z-index:999}@keyframes f{to{stroke-dashoffset:-500}}.merged-hidden{display:none}
-    #narration-bar{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.85);color:#fff;padding:15px 30px;border-radius:50px;font-size:18px;font-weight:500;text-align:center;max-width:80%;z-index:6000;display:none;opacity:0;transition:opacity 0.5s ease,transform 0.5s ease;box-shadow:0 5px 20px rgba(0,0,0,0.3);pointer-events:none;line-height:1.4}#narration-bar.visible{display:block;opacity:1;transform:translateX(-50%) translateY(0)}
+    #narration-bar{position:fixed;top:60px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.85);color:#fff;padding:15px 30px;border-radius:50px;font-size:18px;font-weight:500;text-align:center;max-width:80%;z-index:6000;display:none;opacity:0;transition:opacity 0.5s ease,transform 0.5s ease;box-shadow:0 5px 20px rgba(0,0,0,0.3);pointer-events:none;line-height:1.4}#narration-bar.visible{display:block;opacity:1;transform:translateX(-50%) translateY(0)}
     </style></head><body><header><div style="display:flex;align-items:center;gap:15px">${state.config.logo&&state.config.logo.length>100?`<img src="${state.config.logo}" style="height:40px">`:''}<h1 id="title">${state.config.title}</h1></div></header><div id="ws"><div id="grid"></div></div>
     <div id="narration-bar"></div>
-    <div id="ctrl"><button onclick="prev()">◀</button><span id="cnt" style="color:white;font-weight:bold"></span><button class="big" onclick="n()">▶</button></div><script>const D=JSON.parse('${jsonState}'),S=JSON.parse('${jsonShapes}'),CS=parseInt(D.config.cellSize);const g=document.getElementById('grid');let st=[],idx=-1;function init(){g.innerHTML='<svg id="conn" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#555"/></marker></defs></svg>';g.appendChild(document.createElement('div'));for(let c=0;c<D.config.cols;c++)g.appendChild(document.createElement('div'));for(let r=1;r<=D.config.rows;r++){g.appendChild(document.createElement('div'));for(let c=0;c<D.config.cols;c++){let id='cell-'+String.fromCharCode(65+c)+'-'+r,d=D.cellData[id],div=document.createElement('div');div.id=id;div.className='cell empty';if(d){if(d.mergedBy)div.className+=' merged-hidden';else{div.className='cell';if(d.merge){div.style.gridColumn='span '+d.merge.colSpan;div.style.gridRow='span '+d.merge.rowSpan}let s=S[d.shapeKey]||S['process'];div.innerHTML = \`<svg style="position:absolute;width:100%;height:100%;z-index:1" viewBox="0 0 100 100" preserveAspectRatio="none"><g fill="\${d.bg}" stroke="\${d.border}" stroke-width="2">\${s.path}</g></svg><div style="position:relative;z-index:2;text-align:center;width:90%;color:\${d.textColor};font-size:\${d.fontSize}px;font-weight:\${d.fontBold?'bold':'normal'};font-family:\${d.fontFamily};display:flex;align-items:center;justify-content:center;height:100%;line-height: 1.2; word-break: break-word; white-space: normal;">\${d.text}</div>\`;}}g.appendChild(div)}}const l=document.getElementById('conn');D.connections.forEach((c,i)=>{let f=document.getElementById(c.from),t=document.getElementById(c.to);if(f&&t&&f.style.display!=='none'){let cf={x:f.offsetLeft+f.offsetWidth/2,y:f.offsetTop+f.offsetHeight/2},ct={x:t.offsetLeft+t.offsetWidth/2,y:t.offsetTop+t.offsetHeight/2};let dx=ct.x-cf.x,dy=ct.y-cf.y,len=Math.sqrt(dx*dx+dy*dy);if(len===0)return;let isB=D.connections.some(k=>k.from===c.to&&k.to===c.from);let sX=0,sY=0;let rw=f.offsetWidth;if(isB){let amt=rw*0.15;sX=(-dy/len)*amt;sY=(dx/len)*amt;}let off=len<rw?(len/2)-5:(rw/2)+5;let ox=(dx/len)*off,oy=(dy/len)*off;let s1=cf.x+ox+sX,s2=cf.y+oy+sY,e1=ct.x-ox+sX,e2=ct.y-oy+sY;let pathD='M '+s1+' '+s2+' L '+e1+' '+e2;let p=document.createElementNS('http://www.w3.org/2000/svg','path');p.setAttribute('d',pathD);p.setAttribute('fill','none');p.setAttribute('stroke','#555');p.setAttribute('stroke-width','2');if(c.style==='dashed')p.setAttribute('stroke-dasharray','5,5');if(c.hasArrow!==false)p.setAttribute('marker-end','url(#ah)');l.appendChild(p);if(c.label){let td=pathD;if(s1>e1)td='M '+e1+' '+e2+' L '+s1+' '+s2;let tr=document.createElementNS('http://www.w3.org/2000/svg','path');tr.setAttribute('id','tr-'+i);tr.setAttribute('d',td);tr.setAttribute('fill','none');tr.setAttribute('stroke','none');l.appendChild(tr);let te=document.createElementNS('http://www.w3.org/2000/svg','text');te.setAttribute('dy',s1>e1?'12':'-5');te.style.fill='#444';te.style.fontSize='12px';te.style.fontWeight='bold';te.style.pointerEvents='none';te.style.textShadow='0px 0px 4px white, 0px 0px 4px white';let tp=document.createElementNS('http://www.w3.org/2000/svg','textPath');tp.setAttributeNS('http://www.w3.org/1999/xlink','xlink:href','#tr-'+i);tp.setAttribute('startOffset','50%');tp.setAttribute('text-anchor','middle');tp.textContent=c.label;te.appendChild(tp);l.appendChild(te);}}});
+    <div id="ctrl"><button onclick="prev()">◀</button><span id="cnt" style="color:white;font-weight:bold"></span><button class="big" onclick="n()">▶</button></div><script>const D=JSON.parse('${jsonState}'),S=JSON.parse('${jsonShapes}'),CS=parseInt(D.config.cellSize);const g=document.getElementById('grid');let st=[],idx=-1;function init(){g.innerHTML='<svg id="conn" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#555"/></marker></defs></svg>';g.appendChild(document.createElement('div'));for(let c=0;c<D.config.cols;c++)g.appendChild(document.createElement('div'));for(let r=1;r<=D.config.rows;r++){g.appendChild(document.createElement('div'));for(let c=0;c<D.config.cols;c++){let id='cell-'+String.fromCharCode(65+c)+'-'+r,d=D.cellData[id],div=document.createElement('div');div.id=id;div.className='cell empty';if(d){if(d.mergedBy)div.className+=' merged-hidden';else{div.className='cell';if(d.hidden)div.className+=' node-hidden';if(d.merge){div.style.gridColumn='span '+d.merge.colSpan;div.style.gridRow='span '+d.merge.rowSpan}let s=S[d.shapeKey]||S['process'];div.innerHTML = \`<svg style="position:absolute;width:100%;height:100%;z-index:1" viewBox="0 0 100 100" preserveAspectRatio="none"><g fill="\${d.bg}" stroke="\${d.border}" stroke-width="2">\${s.path}</g></svg><div style="position:relative;z-index:2;text-align:center;width:90%;color:\${d.textColor};font-size:\${d.fontSize}px;font-weight:\${d.fontBold?'bold':'normal'};font-family:\${d.fontFamily};display:flex;align-items:center;justify-content:center;height:100%;line-height: 1.2; word-break: break-word; white-space: normal;">\${d.text}</div><button class="collapse-btn" onclick="toggleBranch(event, this)">-</button>\`;}}g.appendChild(div)}}const l=document.getElementById('conn');D.connections.forEach((c,i)=>{let f=document.getElementById(c.from),t=document.getElementById(c.to);if(f&&t&&f.style.display!=='none'){let cf={x:f.offsetLeft+f.offsetWidth/2,y:f.offsetTop+f.offsetHeight/2},ct={x:t.offsetLeft+t.offsetWidth/2,y:t.offsetTop+t.offsetHeight/2};let dx=ct.x-cf.x,dy=ct.y-cf.y,len=Math.sqrt(dx*dx+dy*dy);if(len===0)return;let isB=D.connections.some(k=>k.from===c.to&&k.to===c.from);let sX=0,sY=0;let rw=f.offsetWidth;if(isB){let amt=rw*0.15;sX=(-dy/len)*amt;sY=(dx/len)*amt;}let off=len<rw?(len/2)-5:(rw/2)+5;let ox=(dx/len)*off,oy=(dy/len)*off;let s1=cf.x+ox+sX,s2=cf.y+oy+sY,e1=ct.x-ox+sX,e2=ct.y-oy+sY;let pathD='M '+s1+' '+s2+' L '+e1+' '+e2;let p=document.createElementNS('http://www.w3.org/2000/svg','path');p.setAttribute('d',pathD);p.setAttribute('fill','none');p.setAttribute('stroke','#555');p.setAttribute('stroke-width','2');p.setAttribute('data-to', c.to);p.setAttribute('id', 'line-'+i);if(c.style==='dashed')p.setAttribute('stroke-dasharray','5,5');if(c.hasArrow!==false)p.setAttribute('marker-end','url(#ah)');l.appendChild(p);if(c.label){let td=pathD;if(s1>e1)td='M '+e1+' '+e2+' L '+s1+' '+s2;let tr=document.createElementNS('http://www.w3.org/2000/svg','path');tr.setAttribute('id','tr-'+i);tr.setAttribute('d',td);tr.setAttribute('fill','none');tr.setAttribute('stroke','none');l.appendChild(tr);let te=document.createElementNS('http://www.w3.org/2000/svg','text');te.setAttribute('dy',s1>e1?'12':'-5');te.setAttribute('id', 'text-'+i);te.style.fill='#444';te.style.fontSize='12px';te.style.fontWeight='bold';te.style.pointerEvents='none';te.style.textShadow='0px 0px 4px white, 0px 0px 4px white';let tp=document.createElementNS('http://www.w3.org/2000/svg','textPath');tp.setAttributeNS('http://www.w3.org/1999/xlink','xlink:href','#tr-'+i);tp.setAttribute('startOffset','50%');tp.setAttribute('text-anchor','middle');tp.textContent=c.label;te.appendChild(tp);l.appendChild(te);}}});
     
     let allTags = new Set();
-    for(let k in D.cellData){
-        let d=D.cellData[k];
+    const visibleCells = document.querySelectorAll('.cell:not(.empty):not(.node-hidden)');
+    visibleCells.forEach(el => {
+        let k = el.id;
+        let d = D.cellData[k];
         let seqs=d.sequences||[];
         if((!seqs||seqs.length===0)&&d.presentationOrder) seqs=['A'+d.presentationOrder];
         if(seqs&&Array.isArray(seqs)){
@@ -3174,21 +3551,16 @@ async function exportStandalonePlayer() {
                 if(tag) allTags.add(tag);
             });
         }
-    }
-    st = Array.from(allTags).sort((a, b) => {
-        let ma = a.match(/^([A-Z]+)(\d+)$/);
-        let mb = b.match(/^([A-Z]+)(\d+)$/);
-        if (!ma || !mb) return a.localeCompare(b);
-        if (ma[1] < mb[1]) return -1;
-        if (ma[1] > mb[1]) return 1;
-        return parseInt(ma[2]) - parseInt(mb[2]);
     });
+    st = Array.from(allTags).sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
     
     st = st.map(tag => {
         let cells = [];
         let text = '';
         for (let id in D.cellData) {
             let d = D.cellData[id];
+            let el = document.getElementById(id);
+            if (!el || el.classList.contains('node-hidden')) continue;
             let seqs = d.sequences || [];
             if ((!seqs || seqs.length === 0) && d.presentationOrder) seqs = ['A' + d.presentationOrder];
             let found = seqs.find(s => {
@@ -3207,24 +3579,91 @@ async function exportStandalonePlayer() {
     }
 
     function n(){
-        if(idx<st.length-1){
-            if(idx>=0){
-                let ps=st[idx];
-                ps.cells.forEach(c=>{let el=document.getElementById(c.id);if(el){el.classList.remove('active');el.style.animation='';el.style.color='';}});
-                let ns=st[idx+1];
-                ps.cells.forEach(p=>{ns.cells.forEach(n=>{
-                    let d=parseFloat(n.sp)*1000;if(isNaN(d))d=1500;
-                    af(p.id,n.id,p.fc,d/1000);
-                })});
+        const visible = Array.from(document.querySelectorAll('.cell:not(.empty):not(.node-hidden)')).sort((a, b) => {
+            const getVal = (el) => {
+                const d = D.cellData[el.id];
+                if (!d) return 'ZZZ';
+                let seqs = d.sequences || [];
+                if ((!seqs || seqs.length === 0) && d.presentationOrder) seqs = ['A' + d.presentationOrder];
+                if (seqs.length > 0) {
+                    const s = seqs[0];
+                    return (typeof s === 'object' && s.tag) ? s.tag : s;
+                }
+                return 'ZZZ';
+            };
+            return getVal(a).localeCompare(getVal(b), undefined, { numeric: true, sensitivity: 'base' });
+        });
+        if(visible.length===0)return;
+        const current = document.querySelector('.cell.active');
+        let idx = current ? visible.indexOf(current) : -1;
+        let nextIdx = idx + 1;
+        if(idx === -1) nextIdx = 0;
+        if(nextIdx >= 0 && nextIdx < visible.length){
+            document.querySelectorAll('.cell').forEach(c=>{c.classList.remove('active');c.style.animation='';c.style.color='';});
+            const next = visible[nextIdx];
+            const d = D.cellData[next.id];
+            next.classList.add('active');
+            if(d){
+                next.style.color = d.presColor || '#fc0';
+                next.style.animation = 'p ' + (d.presSpeed || '1.5s') + ' infinite';
             }
-            idx++;u();
+            if(window.focusOnElement) window.focusOnElement(next);
+            let tag = ''; let text = '';
+            let seqs = d.sequences || [];
+            if((!seqs || seqs.length===0) && d.presentationOrder) seqs=['A'+d.presentationOrder];
+            if(seqs.length > 0) {
+                let s = seqs[0];
+                tag = (typeof s === 'object' && s.tag) ? s.tag : s;
+                if(typeof s === 'object' && s.text) text = s.text;
+            }
+            document.getElementById('cnt').innerText = tag;
+            let nb=document.getElementById('narration-bar');
+            if(text && text.trim()!==''){nb.innerText=text;nb.classList.add('visible');}
+            else{nb.classList.remove('visible');}
         }
     }
     function prev(){
-        if(idx>0){
-            let ps=st[idx];
-            ps.cells.forEach(c=>{let el=document.getElementById(c.id);if(el){el.classList.remove('active');el.style.animation='';el.style.color='';}});
-            idx--;u();
+        const visible = Array.from(document.querySelectorAll('.cell:not(.empty):not(.node-hidden)')).sort((a, b) => {
+            const getVal = (el) => {
+                const d = D.cellData[el.id];
+                if (!d) return 'ZZZ';
+                let seqs = d.sequences || [];
+                if ((!seqs || seqs.length === 0) && d.presentationOrder) seqs = ['A' + d.presentationOrder];
+                if (seqs.length > 0) {
+                    const s = seqs[0];
+                    return (typeof s === 'object' && s.tag) ? s.tag : s;
+                }
+                return 'ZZZ';
+            };
+            return getVal(a).localeCompare(getVal(b), undefined, { numeric: true, sensitivity: 'base' });
+        });
+        if(visible.length===0)return;
+        const current = document.querySelector('.cell.active');
+        let idx = current ? visible.indexOf(current) : -1;
+        let nextIdx = idx - 1;
+        if(idx === -1) nextIdx = 0;
+        if(nextIdx >= 0 && nextIdx < visible.length){
+            document.querySelectorAll('.cell').forEach(c=>{c.classList.remove('active');c.style.animation='';c.style.color='';});
+            const next = visible[nextIdx];
+            const d = D.cellData[next.id];
+            next.classList.add('active');
+            if(d){
+                next.style.color = d.presColor || '#fc0';
+                next.style.animation = 'p ' + (d.presSpeed || '1.5s') + ' infinite';
+            }
+            if(window.focusOnElement) window.focusOnElement(next);
+            let tag = ''; let text = '';
+            let seqs = d.sequences || [];
+            if((!seqs || seqs.length===0) && d.presentationOrder) seqs=['A'+d.presentationOrder];
+            if(seqs.length > 0) {
+                let s = seqs[0];
+                tag = (typeof s === 'object' && s.tag) ? s.tag : s;
+                if(typeof s === 'object' && s.text) text = s.text;
+            }
+            document.getElementById('cnt').innerText = tag;
+            let nb=document.getElementById('narration-bar');
+            if(text && text.trim()!==''){nb.innerText=text;nb.classList.add('visible');}
+            else{nb.classList.remove('visible');}
         }
     }
     function u(){
@@ -3235,7 +3674,8 @@ async function exportStandalonePlayer() {
         });
         if(s.cells.length>0){
             let el=document.getElementById(s.cells[0].id);
-            if(el)el.scrollIntoView({behavior:'smooth',block:'center',inline:'center'});
+            if(el && window.focusOnElement) window.focusOnElement(el);
+            else if(el) el.scrollIntoView({behavior:'smooth',block:'center',inline:'center'});
         }
         document.getElementById('cnt').innerText=s.tag;
         
@@ -3261,7 +3701,45 @@ async function exportStandalonePlayer() {
             let s1=cf.x+ox+sX,s2=cf.y+oy+sY,e1=ct.x-ox+sX,e2=ct.y-oy+sY;let p=document.createElementNS('http://www.w3.org/2000/svg','path');p.setAttribute('d', 'M ' + s1 + ' ' + s2 + ' L ' + e1 + ' ' + e2);p.setAttribute('fill','none');p.setAttribute('class','flow');p.style.stroke=clr||'#fc0';let d=parseFloat(sp)||1.5;p.style.animationDuration=d+'s';document.getElementById('conn').appendChild(p);setTimeout(()=>p.remove(),d*1000);
         }
     }
-    window.onload=init;<\/script></body></html>`;
+    const playerConnections = D.connections;
+    window.toggleBranch = function(event, btn) {
+        event.stopPropagation();
+        const cell = btn.closest('.cell');
+        if(!cell) return;
+        const isCollapsing = btn.innerText === '-';
+        btn.innerText = isCollapsing ? '+' : '-';
+        function processChildren(currentId) {
+            const children = playerConnections.filter(c => {
+                const temSeta = c.arrow === true || c.hasArrow === true || (c.type && c.type.includes('arrow')) || c.markerEnd;
+                return c.from === currentId && !temSeta;
+            });
+            children.forEach(link => {
+                const childCell = document.getElementById(link.to);
+                if(childCell) {
+                    if(isCollapsing) childCell.classList.add('node-hidden');
+                    else {
+                        childCell.classList.remove('node-hidden');
+                        const childBtn = childCell.querySelector('.collapse-btn');
+                        if(childBtn && childBtn.innerText === '+') return;
+                    }
+                    processChildren(link.to);
+                }
+            });
+        }
+        processChildren(cell.id);
+        // [Correção Exportador: Linha e Texto]
+        playerConnections.forEach((conn, i) => {
+            const line = document.getElementById('line-' + i);
+            const textLabel = document.getElementById('text-' + i);
+            const target = document.getElementById(conn.to);
+            if (target) {
+                const isHidden = target.classList.contains('node-hidden');
+                if (line) line.style.display = isHidden ? 'none' : 'block';
+                if (textLabel) textLabel.style.display = isHidden ? 'none' : 'block';
+            }
+        });
+    };
+    window.onload=init;<\/script>` + SCRIPT_PAN_ZOOM_PLAYER + `</body></html>`;
 
     const blob = new Blob([htmlContent], { type: 'text/html' });
     const link = document.createElement('a');
@@ -3432,9 +3910,14 @@ async function exportStandalonePlayer() {
             const tempSteps = {};
 
             // 1. Ordenação Alfanumérica e Agrupamento
-            for (let id in cellData) {
+            // [Motor] Busca apenas células visíveis (ignora ocultas/encolhidas)
+            const visibleCells = document.querySelectorAll('.grid-cell.filled:not(.node-hidden)');
+            visibleCells.forEach(el => {
+                const id = el.id;
                 const cell = cellData[id];
-                let seqs = cell.sequences || [];
+                if (!cell) return;
+
+                let seqs = cell.sequences || [];    
                 
                 // Compatibilidade com legado (converte número antigo para 'A#')
                 if ((!seqs || seqs.length === 0) && cell.presentationOrder) {
@@ -3469,7 +3952,7 @@ async function exportStandalonePlayer() {
                         }
                     });
                 }
-            }
+            });
 
             // Converte para array e ordena: Letra (A-Z) -> Número (1-99)
             presentationSteps = Object.values(tempSteps);
@@ -3485,6 +3968,8 @@ async function exportStandalonePlayer() {
             document.getElementById('settings-panel').style.marginRight = "-320px";
             document.querySelector('header').style.top = "-60px";
             document.getElementById('presentation-controls').style.display = 'flex';
+            document.getElementById('workspace').style.overflow = 'hidden'; // [Câmera Interna] Esconde barras de rolagem
+            document.getElementById('workspace').style.cursor = 'grab'; // [Apresentação] Ativa cursor de mão
             
             // TÍTULO: AUTO-HIDE DO MAPA NO INÍCIO DO PLAY (AJUSTE FINO)
             // Explicação: Este ajuste evita a sobreposição visual entre o planejamento (linhas coloridas) e a execução (energia nas setas).
@@ -3522,53 +4007,151 @@ async function exportStandalonePlayer() {
             document.getElementById('settings-panel').style.marginRight = "0";
             document.querySelector('header').style.top = "0";
             document.getElementById('presentation-controls').style.display = 'none';
+            
+            // [Câmera Interna] Restaura o estado do editor
+            document.getElementById('workspace').style.overflow = 'auto';
+            document.getElementById('workspace').style.cursor = 'default'; // [Apresentação] Restaura cursor padrão
+            const grid = document.getElementById('grid-container');
+            grid.style.transition = 'none';
+            grid.style.transform = ''; // Remove o override para voltar ao CSS var(--pos-x/y)
+
             if (isPreviewMode) togglePreviewMode();
         }
 
         function nextSlide() {
-            if (currentStepIndex < presentationSteps.length - 1) {
-                // Desativa passo anterior
-                if (currentStepIndex >= 0) {
-                    const prevStep = presentationSteps[currentStepIndex];
-                    prevStep.cells.forEach(c => {
-                        const el = document.getElementById(c.id);
-                        if(el) { 
-                            el.classList.remove('presentation-active'); 
-                            el.style.animation = ''; 
-                            el.style.color = ''; 
-                        }
-                    });
+            // [Início da Lógica Substituta]
+            // 1. Recalcula quem está visível AGORA
+            const passosVisiveis = Array.from(document.querySelectorAll('.grid-cell.filled:not(.node-hidden)')).sort((a, b) => {
+                const getVal = (el) => {
+                    const d = cellData[el.id];
+                    if (!d) return 'ZZZ';
+                    let seqs = d.sequences || [];
+                    if ((!seqs || seqs.length === 0) && d.presentationOrder) seqs = ['A' + d.presentationOrder];
+                    if (seqs.length > 0) {
+                        const s = seqs[0];
+                        return (typeof s === 'object' && s.tag) ? s.tag : s;
+                    }
+                    return 'ZZZ';
+                };
+                return getVal(a).localeCompare(getVal(b), undefined, { numeric: true, sensitivity: 'base' });
+            });
+            if (passosVisiveis.length === 0) return;
 
-                    // Animação de fluxo (Conexões) entre grupos
-                    const nextStep = presentationSteps[currentStepIndex + 1];
-                    
-                    // Tenta animar fluxo entre quaisquer células conectadas dos dois grupos
-                    prevStep.cells.forEach(p => {
-                        nextStep.cells.forEach(n => {
-                            let durationMs = parseFloat(n.speed) * 1000; 
-                            if(isNaN(durationMs)) durationMs = 1500;
-                            animateConnectionFlow(p.id, n.id, p.flowColor, durationMs);
-                        });
-                    });
+            // 2. Descobre quem é a forma que tem a energia (ativa) neste momento
+            const elementoAtual = document.querySelector('.grid-cell.filled.presentation-active');
+            let indexAtual = elementoAtual ? passosVisiveis.indexOf(elementoAtual) : -1;
+
+            // 3. Define o próximo índice
+            let novoIndex = indexAtual + 1; 
+
+            // 4. Se a forma atual foi colapsada, ou se é o começo
+            if (indexAtual === -1) novoIndex = 0; 
+
+            // 5. Aplica a mudança
+            if (novoIndex >= 0 && novoIndex < passosVisiveis.length) {
+                // Remove a classe 'active'
+                document.querySelectorAll('.grid-cell.filled').forEach(c => {
+                    c.classList.remove('presentation-active');
+                    c.style.animation = '';
+                    c.style.color = '';
+                });
+                
+                // Adiciona a energia na nova forma
+                const novaForma = passosVisiveis[novoIndex];
+                const d = cellData[novaForma.id];
+                
+                novaForma.classList.add('presentation-active');
+                if(d) {
+                    novaForma.style.color = d.presColor || '#ffcc00';
+                    novaForma.style.animation = `presentationPulse ${d.presSpeed || '1.5s'} infinite`;
                 }
-                currentStepIndex++; updatePresentationUI();
+                
+                // Move a câmera
+                const ws = document.getElementById('workspace');
+                const grid = document.getElementById('grid-container');
+                const centerX = novaForma.offsetLeft + (novaForma.offsetWidth / 2);
+                const centerY = novaForma.offsetTop + (novaForma.offsetHeight / 2);
+                internalPosX = (ws.clientWidth / 2) - centerX;
+                internalPosY = (ws.clientHeight / 2) - centerY;
+                grid.style.transition = 'transform 0.8s cubic-bezier(0.25, 1, 0.5, 1)';
+                grid.style.transform = `translate(${internalPosX}px, ${internalPosY}px)`;
+
+                // Atualiza UI (Contador e Narração)
+                let tag = "Passo " + (novoIndex + 1);
+                let text = "";
+                if(d && d.sequences && d.sequences.length > 0) {
+                     const s = d.sequences[0];
+                     tag = (typeof s === 'object' && s.tag) ? s.tag : s;
+                     if(typeof s === 'object' && s.text) text = s.text;
+                }
+                document.getElementById('pres-counter').innerText = tag;
+                const bar = document.getElementById('narration-bar');
+                if (text && text.trim() !== '') { bar.innerText = text; bar.classList.add('visible'); } 
+                else { bar.classList.remove('visible'); }
             }
         }
 
         function prevSlide() {
-            if (currentStepIndex > 0) {
-                // Desativa passo atual
-                const currStep = presentationSteps[currentStepIndex];
-                currStep.cells.forEach(c => {
-                    const el = document.getElementById(c.id);
-                    if(el) { 
-                        el.classList.remove('presentation-active'); 
-                        el.style.animation = ''; 
-                        el.style.color = ''; 
+            // [Início da Lógica Substituta]
+            const passosVisiveis = Array.from(document.querySelectorAll('.grid-cell.filled:not(.node-hidden)')).sort((a, b) => {
+                const getVal = (el) => {
+                    const d = cellData[el.id];
+                    if (!d) return 'ZZZ';
+                    let seqs = d.sequences || [];
+                    if ((!seqs || seqs.length === 0) && d.presentationOrder) seqs = ['A' + d.presentationOrder];
+                    if (seqs.length > 0) {
+                        const s = seqs[0];
+                        return (typeof s === 'object' && s.tag) ? s.tag : s;
                     }
+                    return 'ZZZ';
+                };
+                return getVal(a).localeCompare(getVal(b), undefined, { numeric: true, sensitivity: 'base' });
+            });
+            if (passosVisiveis.length === 0) return;
+
+            const elementoAtual = document.querySelector('.grid-cell.filled.presentation-active');
+            let indexAtual = elementoAtual ? passosVisiveis.indexOf(elementoAtual) : -1;
+
+            let novoIndex = indexAtual - 1; 
+
+            if (indexAtual === -1) novoIndex = 0; 
+
+            if (novoIndex >= 0 && novoIndex < passosVisiveis.length) {
+                document.querySelectorAll('.grid-cell.filled').forEach(c => {
+                    c.classList.remove('presentation-active');
+                    c.style.animation = '';
+                    c.style.color = '';
                 });
                 
-                currentStepIndex--; updatePresentationUI();
+                const novaForma = passosVisiveis[novoIndex];
+                const d = cellData[novaForma.id];
+                
+                novaForma.classList.add('presentation-active');
+                if(d) {
+                    novaForma.style.color = d.presColor || '#ffcc00';
+                    novaForma.style.animation = `presentationPulse ${d.presSpeed || '1.5s'} infinite`;
+                }
+                
+                const ws = document.getElementById('workspace');
+                const grid = document.getElementById('grid-container');
+                const centerX = novaForma.offsetLeft + (novaForma.offsetWidth / 2);
+                const centerY = novaForma.offsetTop + (novaForma.offsetHeight / 2);
+                internalPosX = (ws.clientWidth / 2) - centerX;
+                internalPosY = (ws.clientHeight / 2) - centerY;
+                grid.style.transition = 'transform 0.8s cubic-bezier(0.25, 1, 0.5, 1)';
+                grid.style.transform = `translate(${internalPosX}px, ${internalPosY}px)`;
+
+                let tag = "Passo " + (novoIndex + 1);
+                let text = "";
+                if(d && d.sequences && d.sequences.length > 0) {
+                     const s = d.sequences[0];
+                     tag = (typeof s === 'object' && s.tag) ? s.tag : s;
+                     if(typeof s === 'object' && s.text) text = s.text;
+                }
+                document.getElementById('pres-counter').innerText = tag;
+                const bar = document.getElementById('narration-bar');
+                if (text && text.trim() !== '') { bar.innerText = text; bar.classList.add('visible'); } 
+                else { bar.classList.remove('visible'); }
             }
         }
 
@@ -3588,7 +4171,22 @@ async function exportStandalonePlayer() {
             // Scroll para o primeiro elemento do grupo
             if(step.cells.length > 0) {
                 const firstEl = document.getElementById(step.cells[0].id);
-                if(firstEl) firstEl.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+                // [Câmera Interna] Substituição do scrollIntoView por matemática de transform
+                if(firstEl) {
+                    const ws = document.getElementById('workspace');
+                    const grid = document.getElementById('grid-container');
+                    
+                    // Calcula o centro do elemento relativo ao grid
+                    const centerX = firstEl.offsetLeft + (firstEl.offsetWidth / 2);
+                    const centerY = firstEl.offsetTop + (firstEl.offsetHeight / 2);
+                    
+                    // Centraliza na tela: (Tela/2) - CentroElemento
+                    internalPosX = (ws.clientWidth / 2) - centerX;
+                    internalPosY = (ws.clientHeight / 2) - centerY;
+                    
+                    grid.style.transition = 'transform 0.8s cubic-bezier(0.25, 1, 0.5, 1)';
+                    grid.style.transform = `translate(${internalPosX}px, ${internalPosY}px)`;
+                }
             }
 
             document.getElementById('pres-counter').innerText = `${step.tag}`;
@@ -3701,6 +4299,53 @@ async function exportStandalonePlayer() {
         function removeBackgroundImage() { currentBgImage = null; document.getElementById('cfg-bg-image').value = ""; applyBackgroundSettings(); saveProject(); }
         function applyBackgroundSettings() { const target = document.getElementById('cfg-bg-target').value; currentBgTarget = target; const body = document.body; const grid = document.getElementById('grid-container'); body.style.backgroundImage = 'none'; grid.style.backgroundImage = 'none'; if (currentBgImage) { if (target === 'body') { body.style.backgroundImage = `url(${currentBgImage})`; } else { grid.style.backgroundImage = `url(${currentBgImage})`; } } updateBranding(); }
 
+        // --- SISTEMA DE RAMIFICAÇÃO: EXPANDIR E ENCOLHER --- //
+        window.toggleBranch = function(event, btn) { // [Ramificação] Função chamada ao clicar no botão
+            event.stopPropagation(); // [Ramificação] Impede que a forma seja selecionada ao clicar no botão
+            
+            const cell = btn.closest('.grid-cell'); // [Ramificação] Encontra quem é a forma Mãe
+            if (!cell) return; // [Ramificação] Proteção contra erros
+
+            const parentId = cell.id; // [Ramificação] Pega o ID da Mãe
+            const isCollapsing = btn.innerText === '-'; // [Ramificação] Verifica se a ação é encolher
+            
+            btn.innerText = isCollapsing ? '+' : '-'; // [Ramificação] Troca o ícone do botão
+            
+            // [Ramificação] Função recursiva que caça as filhas e as filhas das filhas
+            function processChildren(currentId) {
+                // [Regra de Setas] Filtra as conexões para encontrar apenas as filhas válidas
+                const childrenLinks = connections.filter(c => {
+                    // [Regra de Setas] Descobre se a linha atual possui uma ponta/seta direcional
+                    const temSeta = c.arrow === true || c.hasArrow === true || (c.type && c.type.includes('arrow')) || c.markerEnd;
+                    // [Regra de Setas] Só retorna verdadeiro se a linha sair da mãe E NÃO tiver seta
+                    return c.from === currentId && !temSeta;
+                });
+                
+                childrenLinks.forEach(link => { // [Ramificação] Para cada conexão filha
+                    const childCell = document.getElementById(link.to); // [Ramificação] Acha o HTML da filha
+                    if (childCell) {
+                        if (isCollapsing) { // [Ramificação] Se for para encolher
+                            childCell.classList.add('node-hidden'); // [Ramificação] Vira célula fantasma
+                        } else { // [Ramificação] Se for para expandir
+                            // Só expande se a própria filha não estiver colapsada (lógica avançada)
+                            const childBtn = childCell.querySelector('.collapse-btn');
+                            childCell.classList.remove('node-hidden'); // [Ramificação] Volta a aparecer
+                            if (childBtn && childBtn.innerText === '+') {
+                                return; // Se a filha também estiver encolhida, para a expansão por aqui
+                            }
+                        }
+                        processChildren(link.to); // [Ramificação] Chama recursão para caçar a próxima geração
+                    }
+                });
+            }
+
+            processChildren(parentId); // [Ramificação] Inicia a caçada a partir da Mãe
+            
+            // [Ramificação] Atualiza o motor de linhas para ocultar os SVGs
+            if (typeof renderConnections === 'function') renderConnections(); // Chama a sua função de desenhar linhas
+            else if (typeof drawConnections === 'function') drawConnections(); // Fallback
+        };
+
         // --- SISTEMA DE AÇÕES (V1) ---
         function startAction(type) { if(!activeCell) return; currentAction = type; actionSource = activeCell.id; closeMenu(); const msg = type === 'connect' ? "SELECIONE O DESTINO DA SETA" : "SELECIONE A CÉLULA FINAL DA ÁREA"; const statusDiv = document.getElementById('action-status'); statusDiv.innerText = msg; statusDiv.style.display = 'block'; document.querySelectorAll('.grid-cell').forEach(c => c.classList.add('target-mode')); }
         function handleCellClick(targetCell) { if(justDropped) return; if(currentAction && actionSource) { if(currentAction === 'connect') { finishConnection(targetCell); } else if(currentAction === 'merge') { finishMerge(targetCell); } return; } openMenu(event, targetCell); }
@@ -3732,7 +4377,17 @@ async function exportStandalonePlayer() {
     const lines = connectionsLayer.querySelectorAll('.conn-line, line, path, .conn-label, text'); lines.forEach(l => l.remove()); // [Etiquetas] Limpa também os rótulos e textos antigos
     
     connections.forEach((conn, index) => { // [Etiquetas] Adicionado index para referência
-        const elFrom = document.getElementById(conn.from); const elTo = document.getElementById(conn.to); 
+        // [Motor de Linhas - Correção] Pega o HTML da célula de destino
+        const targetCell = document.getElementById(conn.to); 
+
+        // [Motor de Linhas - Correção] Se a célula de destino estiver encolhida, aborta o desenho desta linha!
+        if(targetCell && targetCell.classList.contains('node-hidden')) {
+            return; 
+        }
+
+        const elFrom = document.getElementById(conn.from); const elTo = targetCell;
+        if (elFrom && elFrom.classList.contains('node-hidden')) return;
+
         if(elFrom && elTo) { 
             if(elFrom.style.display === 'none' || elTo.style.display === 'none') return; 
             const centerFrom = getCenter(elFrom); const centerTo = getCenter(elTo); 
@@ -3998,12 +4653,42 @@ async function exportStandalonePlayer() {
             if(activeCell && activeCell.querySelector('.cell-svg')) activeCell.querySelector('.cell-svg').style.transform = `rotate(${currentRotation}deg)`;
             if(document.querySelector('.shape-opt.selected svg')) document.querySelector('.shape-opt.selected svg').style.transform = `rotate(${currentRotation}deg)`;
         }
+
+        // [Tamanhos Múltiplos] Variável global que guarda a escala atual (Inicia no Padrão = 1)
+        let selectedShapeSize = 1;
+
+        // [Tamanhos Múltiplos] Função ativada ao clicar nos botões P, M ou G
+        function setShapeSize(scale, btn) {
+            selectedShapeSize = scale; // Atualiza a variável com a escala escolhida (1, 1.5 ou 2)
+            document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active')); // Remove a cor azul de todos os botões
+            btn.classList.add('active'); // Pinta de azul apenas o botão que foi clicado
+
+            // Se já existir uma forma selecionada na tela, aplica o novo tamanho na hora
+            if(activeCell) {
+                applyChanges(); // Recalcula a forma com a nova escala
+            }
+
+        }
+
         function applyChanges() {
             if(!activeCell) return;
+            
             const data = cellData[activeCell.id] || {};
             const mergeState = data.merge || null;
+            
+            // [Nova Arquitetura de Imagem] Define qual é a forma final (prioriza a variável global do clique no menu)
+            let finalShape = selectedShape || document.getElementById('input-shape-type').value;
+            
+            // [Nova Arquitetura de Imagem] Garante que a foto não se perca ao mudar de tamanho
+            let finalImageData = null;
+            if (finalShape === 'image') {
+                // Se subiu foto nova, usa ela. Se não, resgata a foto que já estava no cofre!
+                finalImageData = shapeImageData ? shapeImageData : data.imageData;
+            }
+
             const newData = {
-                shapeKey: document.getElementById('input-shape-type').value,
+                shapeKey: finalShape, // [Nova Arquitetura] Grava se é retângulo, círculo, imagem, etc.
+                imageData: finalImageData, // [Nova Arquitetura] Guarda o Base64 da imagem no cofre
                 text: document.getElementById('input-text-content').value,
                 fontSize: document.getElementById('input-font-size').value,
                 fontBold: document.getElementById('input-font-bold').checked,
@@ -4013,17 +4698,23 @@ async function exportStandalonePlayer() {
                 textColor: document.getElementById('input-text-color').value,
                 rotation: parseInt(document.getElementById('input-rotation').value) || 0,
                 merge: mergeState,
-                sequences: currentSequences, // TÍTULO: SALVA O ARRAY DE SEQUÊNCIAS
-                presColor: document.getElementById('input-pres-color').value,
-                presFlowColor: document.getElementById('input-pres-flow-color').value,
-                presSpeed: document.getElementById('input-global-speed').value + 's'
+                sequences: typeof currentSequences !== 'undefined' ? currentSequences : (data.sequences || []),
+                presColor: document.getElementById('input-pres-color') ? document.getElementById('input-pres-color').value : '',
+                presFlowColor: document.getElementById('input-pres-flow-color') ? document.getElementById('input-pres-flow-color').value : '',
+                presSpeed: document.getElementById('input-global-speed') ? document.getElementById('input-global-speed').value + 's' : ''
             };
+            // [Limpeza de Segurança] Esvazia a memória temporária para não interferir no próximo quadrado clicado
+            selectedShape = null;
+            shapeImageData = null;
+
             cellData[activeCell.id] = newData; 
-            restoreCell(activeCell, newData); 
-            saveProject(); 
-            closeMenu();
-            setTimeout(autoAjustarGradePeloConteudo, 100);
-            saveState(); // [Histórico] Tira foto do tabuleiro após esta alteração
+            if(typeof restoreCell === 'function') restoreCell(activeCell, newData); // Chama o "Pintor" para desenhar
+            if(typeof saveProject === 'function') saveProject();
+            if(typeof closeMenu === 'function') closeMenu();
+            if(typeof autoAjustarGradePeloConteudo === 'function') setTimeout(autoAjustarGradePeloConteudo, 100);
+            if(typeof saveState === 'function') saveState(); // [Histórico] Tira foto do tabuleiro após esta alteração
+
+
         }
 
         // TÍTULO: GERENCIADOR DE TAGS E SEQUÊNCIAS (ETAPA 3)
@@ -4170,7 +4861,7 @@ async function exportStandalonePlayer() {
         }
 
         function ajustarTextoCélula(cell) {
-            const textElement = cell.querySelector('.cell-text');
+            const textElement = cell.querySelector('.shape-content');
             if (!textElement || !textElement.innerText.trim()) return;
 
             let style = window.getComputedStyle(textElement);
@@ -4183,7 +4874,7 @@ async function exportStandalonePlayer() {
             let maxSize = 0;
 
             cells.forEach(cell => {
-                const textElement = cell.querySelector('.cell-text');
+                const textElement = cell.querySelector('.shape-content');
                 if (textElement && textElement.innerText.trim()) {
                     // Mede a largura necessária forçando o texto a não quebrar a linha
                     textElement.style.whiteSpace = 'nowrap';
@@ -4268,6 +4959,12 @@ async function exportStandalonePlayer() {
                     const targetId = targetCell.id;
 
                     if (targetCell.classList.contains('empty')) {
+                    // [Transferência] Leva as medidas gigantes da casa velha para a nova célula destino
+                    transferCellSize(dragSourceCell, targetCell);
+                    
+                    // [Limpeza de Rastro] Esvazia as medidas da casa velha que ficou para trás
+                    resetCellSize(dragSourceCell);
+
                     targetCell.appendChild(dragItem);
                     
                     dragItem.style.position = 'relative';
@@ -4376,32 +5073,21 @@ async function exportStandalonePlayer() {
         function restoreCell(cell, data) {
             cell.classList.remove('empty'); cell.classList.add('filled');
             
-            // [Imagens] Início da Renderização Visual da Foto
-            if (data && data.type === 'image') { // [Imagens] Se o objeto na célula for do tipo imagem
-                cell.innerHTML = '';
-                const content = document.createElement('div');
-                content.className = 'cell-content';
-                content.style.width = '100%';
-                content.style.height = '100%';
-                content.style.position = 'relative';
-                content.style.display = 'flex';
-                content.style.alignItems = 'center';
-                content.style.justifyContent = 'center';
-                content.style.cursor = 'grab';
-                
-                const imgElement = document.createElement('img'); // [Imagens] Cria o elemento visual de imagem
-                imgElement.src = data.data; // [Imagens] Atribui o código Base64 da foto carregada
-                imgElement.style.width = '100%'; // [Imagens] Força a largura a ocupar todo o quadrado
-                imgElement.style.height = '100%'; // [Imagens] Força a altura a ocupar todo o quadrado
-                imgElement.style.objectFit = 'contain'; // [Imagens] Garante que a foto não fique distorcida
-                imgElement.style.pointerEvents = 'none'; // [Imagens] Permite que cliques passem através da imagem para a célula
-                
-                content.appendChild(imgElement);
-                content.innerHTML += `<div class="delete-btn" onclick="resetCell(this.closest('.grid-cell')); event.stopPropagation();">-</div>`;
-                content.addEventListener('mousedown', initDrag);
-                cell.appendChild(content); // [Imagens] Cola a imagem dentro da célula do tabuleiro
-                return;
-            } // [Imagens] Fim da renderização da foto
+            // [Tamanhos Múltiplos] Define as medidas base da grade (Padrão: 120x72)
+            let baseW = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--cell-size')) || 120; // Captura a largura base
+            let baseH = baseW * 0.6; // Calcula a altura base proporcional
+            
+            // [Tamanhos Múltiplos] Calcula as novas dimensões multiplicadas pela escala escolhida (P=1, M=1.5, G=2)
+            let newW = baseW * selectedShapeSize; // Nova largura da forma
+            let newH = baseH * selectedShapeSize; // Nova altura da forma
+            
+            // [Tamanhos Múltiplos] Aplica as novas medidas reais na célula
+            cell.style.width = newW + 'px'; // Injeta a largura final
+            cell.style.height = newH + 'px'; // Injeta a altura final
+            
+            // [Alinhamento de Grade] Aplica margem negativa para forçar a forma a crescer a partir do CENTRO exato
+            cell.style.marginLeft = -((newW - baseW) / 2) + 'px'; // Puxa metade do crescimento extra para a esquerda
+            cell.style.marginTop = -((newH - baseH) / 2) + 'px'; // Puxa metade do crescimento extra para cima
 
             const shapeDef = SHAPES[data.shapeKey] || SHAPES['process'];
             const fSize = data.fontSize || 14; const fontWeight = data.fontBold ? 'bold' : 'normal'; const fontFamily = data.fontFamily || 'Arial, sans-serif';
@@ -4422,7 +5108,7 @@ async function exportStandalonePlayer() {
             content.style.justifyContent = 'center';
             content.style.cursor = 'grab';
             
-            content.innerHTML = `<svg class="cell-svg" viewBox="0 0 100 100" preserveAspectRatio="none" style="transform: rotate(${data.rotation}deg); pointer-events: none;"><g fill="${data.bg}" stroke="${data.border}" stroke-width="2">${cleanPath}</g></svg><div class="cell-text" style="color: ${data.textColor}; font-size: ${fSize}px; font-weight: ${fontWeight}; font-family: ${fontFamily}; pointer-events: none;">${data.text}</div><div class="delete-btn" onclick="resetCell(this.closest('.grid-cell')); event.stopPropagation();">-</div>`;
+            content.innerHTML = `<svg class="cell-svg" viewBox="0 0 100 100" preserveAspectRatio="none" style="transform: rotate(${data.rotation}deg); pointer-events: none;"><g fill="${data.bg}" stroke="${data.border}" stroke-width="2">${cleanPath}</g></svg><div class="shape-content" style="color: ${data.textColor}; font-size: ${fSize}px; font-weight: ${fontWeight}; font-family: ${fontFamily}; pointer-events: none;">${data.text}</div><div class="delete-btn" onclick="resetCell(this.closest('.grid-cell')); event.stopPropagation();">-</div><button class="collapse-btn" onclick="toggleBranch(event, this)">-</button>`;
             
             content.addEventListener('mousedown', initDrag);
 
@@ -4430,8 +5116,45 @@ async function exportStandalonePlayer() {
             cell.appendChild(content);
             
             setTimeout(() => ajustarTextoCélula(cell), 0); // Use setTimeout to allow browser to render first
+
+            // [Nova Arquitetura de Imagem] O Novo Pintor: Aplica a foto na célula inteira e oculta o SVG padrão
+            if (data.shapeKey === 'image' && data.imageData) {
+                // Esconde o SVG de Retângulo que o motor gerou por precaução
+                const svgElement = cell.querySelector('.cell-svg');
+                if (svgElement) svgElement.style.display = 'none'; 
+        
+                // Aplica a foto na caixa principal, que ocupa todo o quadrado
+                const contentElement = cell.querySelector('.cell-content');
+                if (contentElement) {
+                    contentElement.style.backgroundImage = `url("${data.imageData}")`;
+                    contentElement.style.backgroundSize = 'contain';
+                    contentElement.style.backgroundPosition = 'center';
+                    contentElement.style.backgroundRepeat = 'no-repeat';
+                    contentElement.style.backgroundColor = 'transparent'; 
+                }
+            }
         }
-        function resetCell(cell) { delete cellData[cell.id]; connections = connections.filter(c => c.from !== cell.id && c.to !== cell.id); drawConnections(); cell.classList.remove('filled'); cell.classList.add('empty'); cell.innerHTML = ''; saveProject(); saveState(); // [Histórico] Tira foto do tabuleiro após esta alteração
+
+        // [Limpeza de Rastro] Função que devolve a célula ao seu tamanho pequeno original
+        function resetCellSize(cell) {
+            cell.style.width = ''; // Apaga a largura gigante customizada
+            cell.style.height = ''; // Apaga a altura gigante customizada
+            cell.style.marginLeft = ''; // Remove a margem negativa do eixo X
+            cell.style.marginTop = ''; // Remove a margem negativa do eixo Y
+        }
+
+        // [Transferência] Função que copia o tamanho da casa velha para a nova casa no Drag & Drop
+        function transferCellSize(sourceCell, targetCell) {
+        targetCell.style.width = sourceCell.style.width; // Copia a largura para a nova casa
+        targetCell.style.height = sourceCell.style.height; // Copia a altura para a nova casa
+        targetCell.style.marginLeft = sourceCell.style.marginLeft; // Copia o alinhamento X
+        targetCell.style.marginTop = sourceCell.style.marginTop; // Copia o alinhamento Y
+        }
+
+        function resetCell(cell) { delete cellData[cell.id]; connections = connections.filter(c => c.from !== cell.id && c.to !== cell.id); drawConnections(); cell.classList.remove('filled'); cell.classList.add('empty'); cell.innerHTML = ''; 
+            // [Limpeza de Rastro] Limpa as medidas gigantes da célula que acabou de ser apagada
+            resetCellSize(cell);
+            saveProject(); saveState(); // [Histórico] Tira foto do tabuleiro após esta alteração
         }
         
         function openMenu(e, cell) {
@@ -4496,7 +5219,49 @@ async function exportStandalonePlayer() {
             event.target.classList.add('active'); // Aplica o estilo de botão ativo ao elemento que disparou o clique
             if(id === 'tab-fav') renderFavorites(); // [Favoritos] Atualiza a grade ao abrir a aba
         }
-        function selectShape(key, btnElement) { document.getElementById('input-shape-type').value = key; document.querySelectorAll('.shape-opt').forEach(el => { el.classList.remove('selected'); el.querySelector('svg').style.transform = 'none'; }); btnElement.classList.add('selected'); btnElement.querySelector('svg').style.transform = `rotate(${currentRotation}deg)`; }
+        function selectShape(key, btnElement) { selectedShape = key; selectedImage = null; document.getElementById('input-shape-type').value = key; document.querySelectorAll('.shape-opt').forEach(el => { el.classList.remove('selected'); el.querySelector('svg').style.transform = 'none'; }); btnElement.classList.add('selected'); btnElement.querySelector('svg').style.transform = `rotate(${currentRotation}deg)`; }
+
+        // [Nova Arquitetura de Imagem] 1. O clique no botão do menu (Abre a janela do PC)
+        function triggerImageShape(element) {
+            // Remove a seleção de todos os botões e marca o botão da imagem
+            document.querySelectorAll('.shape-opt').forEach(el => el.classList.remove('selected'));
+            if(element) element.classList.add('selected');
+            
+            // [MÁGICA DA MEMÓRIA FORÇADA] Grava a célula na janela global ANTES de o SO roubar o foco
+            window.memoryImageCell = activeCell;
+            
+            // Aciona o input invisível
+            document.getElementById('shape-image-input').click();
+        }
+
+        // [Nova Arquitetura de Imagem] 2. Lê a foto e utiliza a memória para salvar
+        function processImageShape(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    shapeImageData = e.target.result; // Salva o Base64 da foto
+                    selectedShape = 'image'; // Informa ao motor que a forma é 'image'
+                    
+                    // [MÁGICA DA MEMÓRIA] Restaura o foco para a célula que estava ancorada na memória
+                    if (window.memoryImageCell) {
+                        if (typeof activeCell !== 'undefined') activeCell = window.memoryImageCell;
+                        if (typeof currentCell !== 'undefined') currentCell = window.memoryImageCell;
+                        
+                        // Agora que ele lembrou a morada correta, dispara o salvamento!
+                        if (typeof applyChanges === 'function') applyChanges();
+                        else if (typeof applyShape === 'function') applyShape();
+                    }
+                    
+                    // Limpa a memória após o uso para não causar conflito nos próximos quadrados
+                    window.memoryImageCell = null;
+                };
+                reader.readAsDataURL(file);
+            }
+            // Limpa o input para permitir enviar a mesma foto de novo depois
+            event.target.value = '';
+        }
+
         document.addEventListener('click', (e) => { if (!contextMenu.contains(e.target) && !e.target.classList.contains('grid-cell') && !e.target.closest('#settings-panel') && e.target.id !== 'presentation-controls' && !e.target.closest('#presentation-controls')) closeMenu(); });
 
         function saveProject() {
@@ -4621,6 +5386,7 @@ function loadProject() { // [Carregamento] Função inicial de resgate
             startPanY = e.clientY; // [Navegação] Grava a longitude do mouse
             initialPosX = posX; // [Navegação] Grava onde a folha está na horizontal
             initialPosY = posY; // [Navegação] Grava onde a folha está na vertical
+            document.getElementById('grid-container').style.transition = 'none'; // [Navegação] Remove delay para arraste 1:1
         }); // [Navegação] Fim do clique inicial
 
         workspace.addEventListener('dblclick', function(e) { // [Etiquetas] Escuta o clique duplo no tabuleiro
@@ -4651,6 +5417,7 @@ function loadProject() { // [Carregamento] Função inicial de resgate
         window.addEventListener('mouseup', () => { // [Navegação] Escuta o momento exato em que o botão do mouse levanta
             if (isPanning) { // [Navegação] Checa se o sistema estava num processo de arraste ativo
                 isPanning = false; // [Navegação] Desliga a flag de permissão
+                document.getElementById('grid-container').style.transition = ''; // [Navegação] Restaura animação suave
                 saveProject(); // [Navegação] Chama a gravação silenciosa para o localStorage fixar a nova posição
             } // [Navegação] Fim do bloco de checagem
         }); // [Navegação] Fim da liberação do clique
@@ -4700,16 +5467,27 @@ function loadProject() { // [Carregamento] Função inicial de resgate
             });
         }
 
-        function processImageUpload(input) { // [Imagens] Processa o ficheiro selecionado pelo utilizador
-            const file = input.files[0];
+        // [Motor de Upload] Gerencia a entrada de arquivos de imagem
+        function handleImageUpload(event) {
+            const file = event.target.files[0]; 
             if (file) {
-                const reader = new FileReader();
+                const reader = new FileReader(); 
                 reader.onload = function(e) {
-                    const base64Image = e.target.result; // [Imagens] Converte a foto em código de texto
-                    addImageToCell(base64Image); // [Imagens] Manda para a célula selecionada
+                    selectedImage = e.target.result; // Grava a imagem na memória
+                    selectedShape = null; // [Blindagem] Anula qualquer forma geométrica ativa
+                    
+                    // Remove o fundo azul das formas no menu
+                    document.querySelectorAll('.shape-opt').forEach(el => el.classList.remove('selected'));
+                    
+                    // Força o salvamento na célula ativa
+                    if (typeof applyChanges === 'function') {
+                        applyChanges(); 
+                    }
                 };
-                reader.readAsDataURL(file);
+                reader.readAsDataURL(file); 
             }
+            // [Correção do Bug] Limpa o nome do arquivo para o navegador não bloquear a mesma foto
+            event.target.value = ''; 
         }
 
         function addImageToCell(imgData) { // [Imagens] Versão corrigida com âncora persistente
@@ -4729,6 +5507,47 @@ function loadProject() { // [Carregamento] Função inicial de resgate
                 alert("Por favor, selecione uma célula novamente antes de carregar a imagem."); // [Imagens] Alerta amigável ao utilizador
             } // [Imagens] Fim da verificação
         } // [Imagens] Fim da função corrigida
+
+        // --- TÍTULO: MOTOR DE ARRASTE (PAN) PARA APRESENTAÇÃO INTERNA ---
+        let isInternalPanning = false;
+        let internalStartX = 0, internalStartY = 0;
+        let dragInitialX = 0, dragInitialY = 0;
+
+        const presentationWs = document.getElementById('workspace');
+        const presentationGrid = document.getElementById('grid-container');
+
+        presentationWs.addEventListener('mousedown', (e) => {
+            // Só permite arrastar se a apresentação estiver rodando (overflow hidden)
+            if (presentationWs.style.overflow !== 'hidden') return;
+            // Protege a UI
+            if(e.target.closest('#narration-bar, header, button, a, .btn, [onclick], svg')) return;
+            
+            isInternalPanning = true;
+            internalStartX = e.clientX;
+            internalStartY = e.clientY;
+            // Pega as posições matemáticas atuais da câmera
+            dragInitialX = typeof internalPosX !== 'undefined' ? internalPosX : 0;
+            dragInitialY = typeof internalPosY !== 'undefined' ? internalPosY : 0;
+            presentationWs.style.cursor = 'grabbing';
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isInternalPanning) return;
+            e.preventDefault();
+            
+            internalPosX = dragInitialX + (e.clientX - internalStartX);
+            internalPosY = dragInitialY + (e.clientY - internalStartY);
+            
+            presentationGrid.style.transition = 'none'; // Tira o voo suave para arrastar sem delay
+            presentationGrid.style.transform = `translate(${internalPosX}px, ${internalPosY}px)`;
+        });
+
+        window.addEventListener('mouseup', () => {
+            if (isInternalPanning) {
+                isInternalPanning = false;
+                presentationWs.style.cursor = 'grab';
+            }
+        });
 
         // [Menu Móvel] Início do Motor de Arrastar o Painel Flutuante
         let isDraggingMenu = false; // [Menu Móvel] Flag que indica se o usuário está segurando o menu
@@ -4755,9 +5574,21 @@ function loadProject() { // [Carregamento] Função inicial de resgate
             dragHandleBtn.style.cursor = 'grab'; // [Menu Móvel] Abre a mãozinha na alça novamente
         }); // [Menu Móvel] Fim do motor de arraste
 
+        // [UX do Duplo Clique] Ouve os duplos cliques globalmente dentro do menu para inserção rápida
+        document.addEventListener('dblclick', (e) => {
+            const contextMenu = document.getElementById('context-menu');
+            // Se o menu estiver aberto e o clique for em uma forma (shape-opt)
+            if(contextMenu && contextMenu.style.display !== 'none' && e.target.closest('.shape-opt')) { 
+                if (typeof applyChanges === 'function') {
+                    applyChanges(); 
+                }
+            }
+        });
+
         // Inicializa sistema
         window.onload = () => { initApp(); renderFavorites(); };
     </script>
-    <input type="file" id="img-upload-input" accept="image/*" style="display:none" onchange="processImageUpload(this)">
+    <input type="file" id="img-upload-input" accept="image/*" style="display:none" onchange="handleImageUpload(event)">
+    <input type="file" id="shape-image-input" accept="image/*" style="display:none" onchange="processImageShape(event)">
 </body>
 </html>
